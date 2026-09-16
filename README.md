@@ -7,6 +7,7 @@ Public assets created and shared by StratoNext, Inc. — [https://www.stratonext
 ### `skills/`
 
 - [software-architect](skills/software-architect) — Helps you follow a requirements-first software design workflow, from capturing requirements through to documenting the resulting architecture.
+- [software-developer](skills/software-developer) — Enforces tech stack, naming, structure, testing, linting, CI/CD, and documentation rules while implementing code.
 
 ## License
 
