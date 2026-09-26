@@ -59,6 +59,12 @@
 		"description": "Inventories which AWS regions actually have resources in them, to catch forgotten or unexpected regional usage.",
 		"cloudProvider": "AWS",
 		"category": "region-usage",
-		"path": "templates/aws/aws-region-usage-inventory-report.yaml"
+		"path": "templates/aws/aws-region-usage-inventory-report.yaml",
+		"id": "aws-region-cost-distribution-report",
+		"name": "Region cost distribution report",
+		"description": "Breaks down AWS spend by region to show where cost is concentrated and flags regions with unexpectedly fast-growing spend.",
+		"cloudProvider": "AWS",
+		"category": "region-usage",
+		"path": "templates/aws/aws-region-cost-distribution-report.yaml"
 	}
 ]
