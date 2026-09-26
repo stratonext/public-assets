@@ -1,0 +1,68 @@
+---
+id: aws-orphaned-ebs-cleanup
+name: Orphaned EBS volumes and stale snapshots cleanup
+description: >
+  Finds unattached EBS volumes and snapshots past a retention threshold and
+  removes them after confirming they are not referenced by an in-use AMI.
+cloudProvider: AWS
+category: cleanup
+version: 1
+tags: [cleanup, ebs, storage]
+---
+task:
+  name: Orphaned EBS volumes and stale snapshots cleanup
+  description: >
+    Find unattached EBS volumes and stale snapshots, confirm they are not
+    referenced by an in-use AMI, then delete them and report the savings.
+  instructions: |
+    In the target environment, list every EBS volume in the "available"
+    (unattached) state that has been in that state for more than
+    {{idle_days}} days, and every EBS snapshot older than
+    {{snapshot_retention_days}} days whose source volume no longer exists or
+    is itself unattached.
+
+    For each candidate volume or snapshot, confirm it is not referenced by
+    any AMI that is still in use (registered and not deregistered) before
+    touching it. Exclude anything backing an in-use AMI from the cleanup,
+    regardless of its age or attachment state.
+
+    Delete the confirmed orphaned volumes and snapshots.
+
+    Produce a report listing every volume and snapshot that was removed,
+    with their ids, and an estimated monthly savings figure based on their
+    size and storage type. Upload the report as an artifact in the
+    workspace.
+  verificationCriteria: |
+    Every volume and snapshot listed as removed was confirmed unattached
+    (and, for snapshots, confirmed not to back an in-use AMI) before
+    deletion, and the report lists exactly what was deleted with their ids
+    and an estimated monthly savings total.
+
+placeholders:
+  environment:
+    label: Environment
+    description: Which AWS environment to scan for orphaned EBS volumes and snapshots.
+    required: true
+
+  agent:
+    label: Assignee
+    description: Which agent should run this cleanup.
+    required: true
+
+  variables:
+    - key: idle_days
+      label: Unattached threshold (days)
+      description: >
+        Minimum number of days a volume must have been unattached to be
+        considered orphaned.
+      type: number
+      default: 7
+      required: true
+
+    - key: snapshot_retention_days
+      label: Snapshot retention (days)
+      description: >
+        Minimum age, in days, for a snapshot to be considered for cleanup.
+      type: number
+      default: 90
+      required: true
