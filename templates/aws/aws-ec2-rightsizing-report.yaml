@@ -1,0 +1,73 @@
+---
+id: aws-ec2-rightsizing-report
+name: EC2 rightsizing report
+description: >
+  Finds EC2 instances that are idle or underutilized based on CPU and network
+  metrics and recommends downsizing or termination.
+cloudProvider: AWS
+category: cost-optimization
+version: 1
+tags: [cost-optimization, ec2, rightsizing]
+---
+task:
+  name: EC2 rightsizing report
+  description: >
+    Identify idle or underutilized EC2 instances based on CPU and network
+    metrics, and recommend downsizing or termination for each.
+  instructions: |
+    Using CloudWatch, pull the CPUUtilization, NetworkIn, and NetworkOut
+    metrics for every EC2 instance in the environment over the last
+    {{lookback_days}} days.
+
+    For each instance:
+    1. Compute the average CPU utilization and average network in/out over
+       the period.
+    2. Flag the instance if its average CPU utilization stays below
+       {{cpu_threshold_percent}}% for the entire period.
+    3. For each flagged instance, recommend an action:
+       - If it still has meaningful network traffic, recommend downsizing to
+         a smaller instance type in the same family and generation.
+       - If both CPU and network activity look fully idle, recommend
+         stopping or terminating the instance instead.
+    4. Estimate the monthly savings for each recommendation by comparing the
+       current instance type's on-demand price to the recommended smaller
+       instance type's price (or the full instance cost, for a
+       stop/terminate recommendation).
+
+    Produce a report listing every EC2 instance in the environment, with its
+    current instance type, average CPU utilization, average network
+    in/out, and — for flagged instances — the recommendation and estimated
+    monthly savings. Upload the report as an artifact in the workspace.
+  verificationCriteria: |
+    The report covers every EC2 instance in the environment, lists a
+    recommendation for each instance whose average CPU utilization stayed
+    below {{cpu_threshold_percent}}% for the last {{lookback_days}} days, and
+    states an estimated total savings figure.
+
+placeholders:
+  environment:
+    label: Environment
+    description: Which AWS environment to scan for EC2 instances.
+    required: true
+
+  agent:
+    label: Assignee
+    description: Which agent should run this analysis.
+    required: true
+
+  variables:
+    - key: lookback_days
+      label: Lookback period (days)
+      description: How many days of CPU and network metrics to analyze.
+      type: number
+      default: 14
+      required: true
+
+    - key: cpu_threshold_percent
+      label: CPU utilization threshold (%)
+      description: >
+        Average CPU utilization below which an instance is flagged as idle
+        or underutilized.
+      type: number
+      default: 10
+      required: true

@@ -6,5 +6,13 @@
 		"cloudProvider": "AWS",
 		"category": "cost-optimization",
 		"path": "templates/aws/aws-cost-and-credits-coverage.yaml"
+	},
+	{
+		"id": "aws-ec2-rightsizing-report",
+		"name": "EC2 rightsizing report",
+		"description": "Finds EC2 instances that are idle or underutilized based on CPU and network metrics and recommends downsizing or termination.",
+		"cloudProvider": "AWS",
+		"category": "cost-optimization",
+		"path": "templates/aws/aws-ec2-rightsizing-report.yaml"
 	}
 ]
