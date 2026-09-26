@@ -47,6 +47,12 @@
 		"description": "Checks IAM users for access keys past a rotation threshold, credentials unused for a long time, and users without MFA enabled. Report only, changes nothing.",
 		"cloudProvider": "AWS",
 		"category": "checkup",
-		"path": "templates/aws/aws-iam-credential-hygiene-checkup.yaml"
+		"path": "templates/aws/aws-iam-credential-hygiene-checkup.yaml",
+		"id": "aws-public-s3-exposure-checkup",
+		"name": "Public S3 bucket exposure checkup",
+		"description": "Checks every S3 bucket in the account for public read or write access and flags any that are exposed. Report only, changes nothing.",
+		"cloudProvider": "AWS",
+		"category": "checkup",
+		"path": "templates/aws/aws-public-s3-exposure-checkup.yaml"
 	}
 ]
