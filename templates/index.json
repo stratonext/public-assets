@@ -6,5 +6,13 @@
 		"cloudProvider": "AWS",
 		"category": "cost-optimization",
 		"path": "templates/aws/aws-cost-and-credits-coverage.yaml"
+	},
+	{
+		"id": "aws-unused-elastic-ip-cleanup",
+		"name": "Unused Elastic IP cleanup",
+		"description": "Finds Elastic IP addresses not associated with a running instance, NAT gateway, or load balancer, and releases them.",
+		"cloudProvider": "AWS",
+		"category": "cleanup",
+		"path": "templates/aws/aws-unused-elastic-ip-cleanup.yaml"
 	}
 ]
