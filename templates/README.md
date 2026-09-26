@@ -51,7 +51,7 @@ placeholders:
      "name": "<name>",
      "description": "<description>",
      "cloudProvider": "<cloudProvider>",
+     "category": "<category>",
      "path": "templates/<cloudProvider>/<id>.yaml"
    }
    ```
-.
