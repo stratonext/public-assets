@@ -1,0 +1,64 @@
+---
+id: aws-unused-security-groups-cleanup
+name: Unused security groups and network interfaces cleanup
+description: >
+  Finds security groups and elastic network interfaces that are not attached
+  to any resource and removes them.
+cloudProvider: AWS
+category: cleanup
+version: 1
+tags: [cleanup, networking, security-groups]
+---
+task:
+  name: Unused security groups and network interfaces cleanup
+  description: >
+    Find security groups and elastic network interfaces that are not
+    attached to any resource in the environment, confirm they are unused,
+    and remove them.
+  instructions: |
+    In the target AWS environment, list every security group that is not
+    attached to any running instance, load balancer, or other resource,
+    excluding each VPC's default security group (default security groups
+    must never be removed).
+
+    Also list every elastic network interface (ENI) that is in the
+    "available" (unattached) state and has been unattached for longer than
+    {{idle_days}} days.
+
+    For each candidate security group and ENI, confirm it is genuinely
+    unused before touching it: re-check that no instance, load balancer,
+    RDS instance, Lambda function, or other resource references it, and
+    that it is not referenced as a source/destination in another security
+    group's rules.
+
+    Delete the confirmed-unused security groups and confirmed-unused,
+    aged-out elastic network interfaces.
+
+    Produce a report listing exactly which security groups and network
+    interfaces were removed, with their IDs and the VPC they belonged to.
+  verificationCriteria: |
+    No default security group was touched. Every removed security group and
+    network interface was confirmed unattached before deletion, and every
+    removed elastic network interface had been unattached for longer than
+    {{idle_days}} days. The report lists exactly what was deleted.
+
+placeholders:
+  environment:
+    label: Environment
+    description: Which AWS environment to scan for unused security groups and network interfaces.
+    required: true
+
+  agent:
+    label: Assignee
+    description: Which agent should run this cleanup.
+    required: true
+
+  variables:
+    - key: idle_days
+      label: Unattached ENI threshold (days)
+      description: >
+        Minimum number of days an elastic network interface must have been
+        unattached before it is eligible for removal.
+      type: number
+      default: 7
+      required: true

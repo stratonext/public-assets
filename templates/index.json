@@ -35,6 +35,12 @@
 		"description": "Finds Elastic IP addresses not associated with a running instance, NAT gateway, or load balancer, and releases them.",
 		"cloudProvider": "AWS",
 		"category": "cleanup",
-		"path": "templates/aws/aws-unused-elastic-ip-cleanup.yaml"
+		"path": "templates/aws/aws-unused-elastic-ip-cleanup.yaml",
+		"id": "aws-unused-security-groups-cleanup",
+		"name": "Unused security groups and network interfaces cleanup",
+		"description": "Finds security groups and elastic network interfaces that are not attached to any resource and removes them.",
+		"cloudProvider": "AWS",
+		"category": "cleanup",
+		"path": "templates/aws/aws-unused-security-groups-cleanup.yaml"
 	}
 ]
