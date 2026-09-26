@@ -6,5 +6,13 @@
 		"cloudProvider": "AWS",
 		"category": "cost-optimization",
 		"path": "templates/aws/aws-cost-and-credits-coverage.yaml"
+	},
+	{
+		"id": "aws-public-s3-exposure-checkup",
+		"name": "Public S3 bucket exposure checkup",
+		"description": "Checks every S3 bucket in the account for public read or write access and flags any that are exposed. Report only, changes nothing.",
+		"cloudProvider": "AWS",
+		"category": "checkup",
+		"path": "templates/aws/aws-public-s3-exposure-checkup.yaml"
 	}
 ]
