@@ -14,5 +14,13 @@
 		"cloudProvider": "AWS",
 		"category": "cost-optimization",
 		"path": "templates/aws/aws-ec2-rightsizing-report.yaml"
+	},
+	{
+		"id": "aws-reserved-instance-coverage-report",
+		"name": "Reserved Instance and Savings Plan coverage report",
+		"description": "Reports how much on-demand EC2 and RDS spend is covered by existing Reserved Instances or Savings Plans, and flags uncovered usage worth committing to.",
+		"cloudProvider": "AWS",
+		"category": "cost-optimization",
+		"path": "templates/aws/aws-reserved-instance-coverage-report.yaml"
 	}
 ]
