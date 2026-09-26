@@ -6,5 +6,13 @@
 		"cloudProvider": "AWS",
 		"category": "cost-optimization",
 		"path": "templates/aws/aws-cost-and-credits-coverage.yaml"
+	},
+	{
+		"id": "aws-region-usage-inventory-report",
+		"name": "Cross-region resource usage inventory",
+		"description": "Inventories which AWS regions actually have resources in them, to catch forgotten or unexpected regional usage.",
+		"cloudProvider": "AWS",
+		"category": "region-usage",
+		"path": "templates/aws/aws-region-usage-inventory-report.yaml"
 	}
 ]
