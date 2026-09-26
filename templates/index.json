@@ -29,6 +29,12 @@
 		"description": "Finds unattached EBS volumes and snapshots past a retention threshold and removes them after confirming they are not referenced by an in-use AMI.",
 		"cloudProvider": "AWS",
 		"category": "cleanup",
-		"path": "templates/aws/aws-orphaned-ebs-cleanup.yaml"
+		"path": "templates/aws/aws-orphaned-ebs-cleanup.yaml",
+		"id": "aws-unused-elastic-ip-cleanup",
+		"name": "Unused Elastic IP cleanup",
+		"description": "Finds Elastic IP addresses not associated with a running instance, NAT gateway, or load balancer, and releases them.",
+		"cloudProvider": "AWS",
+		"category": "cleanup",
+		"path": "templates/aws/aws-unused-elastic-ip-cleanup.yaml"
 	}
 ]
