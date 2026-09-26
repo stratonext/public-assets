@@ -1,0 +1,67 @@
+---
+id: aws-region-cost-distribution-report
+name: Region cost distribution report
+description: >
+  Breaks down AWS spend by region to show where cost is concentrated and
+  flags regions with unexpectedly fast-growing spend.
+cloudProvider: AWS
+category: region-usage
+version: 1
+tags: [region-usage, cost-optimization]
+---
+task:
+  name: Region cost distribution report
+  description: >
+    Break down AWS spend by region, identify where cost is concentrated, and
+    flag regions whose spend is growing unexpectedly fast.
+  instructions: |
+    Using AWS Cost Explorer, pull cost and usage data for the environment,
+    grouped by region, for the last {{lookback_days}} days.
+
+    1. Rank every region with spend in the period by total cost, highest
+       first.
+    2. For the top 3 regions by spend, break down cost by service and list
+       the top 5 services driving cost in each region.
+    3. For each region, compare its total spend in the last
+       {{lookback_days}} days to its spend in the prior period of the same
+       length (the {{lookback_days}} days immediately before it). Flag any
+       region whose spend grew by more than {{growth_threshold_percent}}%
+       between the two periods.
+
+    Produce a report with the full region ranking, the top 5 services per
+    top-3 region, and a table of flagged fast-growing regions with their
+    period-over-period growth percentage. Upload the report as an artifact
+    in the workspace.
+  verificationCriteria: |
+    The report ranks every region with spend in the period by total cost,
+    breaks down the top 3 regions by their top 5 services, flags any region
+    whose spend grew by more than {{growth_threshold_percent}}% versus the
+    prior period of the same length, and has been uploaded as an artifact.
+
+placeholders:
+  environment:
+    label: Environment
+    description: Which AWS environment to analyze.
+    required: true
+
+  agent:
+    label: Assignee
+    description: Which agent should run this analysis.
+    required: true
+
+  variables:
+    - key: lookback_days
+      label: Lookback period (days)
+      description: How many days of cost and usage data to analyze.
+      type: number
+      default: 30
+      required: true
+
+    - key: growth_threshold_percent
+      label: Spend growth threshold (%)
+      description: >
+        Minimum period-over-period spend growth, as a percentage, to flag a
+        region as fast-growing.
+      type: number
+      default: 20
+      required: true

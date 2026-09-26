@@ -6,5 +6,13 @@
 		"cloudProvider": "AWS",
 		"category": "cost-optimization",
 		"path": "templates/aws/aws-cost-and-credits-coverage.yaml"
+	},
+	{
+		"id": "aws-region-cost-distribution-report",
+		"name": "Region cost distribution report",
+		"description": "Breaks down AWS spend by region to show where cost is concentrated and flags regions with unexpectedly fast-growing spend.",
+		"cloudProvider": "AWS",
+		"category": "region-usage",
+		"path": "templates/aws/aws-region-cost-distribution-report.yaml"
 	}
 ]
