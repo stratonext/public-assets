@@ -1,0 +1,9 @@
+[
+	{
+		"id": "aws-cost-and-credits-coverage",
+		"name": "AWS cost and credits coverage report",
+		"description": "Aggregates AWS spend per linked account across the organization, compares it against applied AWS credits, and flags services whose spend is not covered by any credit.",
+		"cloudProvider": "AWS",
+		"path": "templates/aws/aws-cost-and-credits-coverage.yaml"
+	}
+]

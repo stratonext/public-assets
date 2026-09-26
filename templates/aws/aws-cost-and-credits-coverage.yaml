@@ -1,0 +1,72 @@
+id: aws-cost-and-credits-coverage
+name: AWS cost and credits coverage report
+
+description: >
+  Aggregates AWS spend per linked account across the organization, compares it
+  against applied AWS credits, and flags services whose spend is not covered
+  by any credit.
+
+cloudProvider: AWS
+
+tags: [cost-optimization, billing, credits, organizations]
+
+task:
+  name: AWS cost and credits coverage report
+  description: >
+    Aggregate AWS costs per account across the organization, compare against
+    AWS credits applied, and identify services whose spend is not covered by
+    credits.
+  instructions: |
+    Using AWS Cost Explorer, pull cost and usage data for
+    the last {{lookback_days}} days, grouped by linked account and by service.
+    Use the organization's management (payer) account so consolidated billing
+    and credits data across every linked account is visible.
+
+    For each linked account:
+    1. Compute total cost and total credits applied (from the Credits cost
+       category / AWS Discounts breakdown).
+    2. Compute net cost (cost minus credits applied) per service.
+    3. Flag any service whose net (uncovered) spend exceeds
+       {{credit_threshold_usd}} USD — these are costs not being offset by
+       any existing credit.
+
+    Produce a report with, per account: total cost, total credits applied,
+    total net cost, and a table of flagged services with their uncovered
+    spend. Upload the report as an artifact in the workspace.
+  verificationCriteria: |
+    The report lists every linked account in the organization with its total
+    cost, total credits applied, and net cost for the last {{lookback_days}}
+    days, includes a table per account of services whose net (uncovered)
+    spend exceeds {{credit_threshold_usd}} USD, and has been uploaded as an
+    artifact.
+
+placeholders:
+  environment:
+    label: Environment
+    description: >
+      The AWS environment to run the analysis against. Use the organization's
+      management (payer) account so consolidated billing and credits data
+      across all linked accounts is visible.
+    required: true
+
+  agent:
+    label: Assignee
+    description: Which agent should run this analysis.
+    required: true
+
+  variables:
+    - key: lookback_days
+      label: Lookback period (days)
+      description: How many days of cost and usage data to analyze.
+      type: number
+      default: 30
+      required: true
+
+    - key: credit_threshold_usd
+      label: Uncovered spend threshold (USD)
+      description: >
+        Minimum uncovered (credit-not-applied) spend per service to flag, to
+        keep the report free of noise from trivial amounts.
+      type: number
+      default: 10
+      required: true
