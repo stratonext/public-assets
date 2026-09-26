@@ -6,5 +6,13 @@
 		"cloudProvider": "AWS",
 		"category": "cost-optimization",
 		"path": "templates/aws/aws-cost-and-credits-coverage.yaml"
+	},
+	{
+		"id": "aws-unused-security-groups-cleanup",
+		"name": "Unused security groups and network interfaces cleanup",
+		"description": "Finds security groups and elastic network interfaces that are not attached to any resource and removes them.",
+		"cloudProvider": "AWS",
+		"category": "cleanup",
+		"path": "templates/aws/aws-unused-security-groups-cleanup.yaml"
 	}
 ]
