@@ -53,6 +53,12 @@
 		"description": "Checks every S3 bucket in the account for public read or write access and flags any that are exposed. Report only, changes nothing.",
 		"cloudProvider": "AWS",
 		"category": "checkup",
-		"path": "templates/aws/aws-public-s3-exposure-checkup.yaml"
+		"path": "templates/aws/aws-public-s3-exposure-checkup.yaml",
+		"id": "aws-region-usage-inventory-report",
+		"name": "Cross-region resource usage inventory",
+		"description": "Inventories which AWS regions actually have resources in them, to catch forgotten or unexpected regional usage.",
+		"cloudProvider": "AWS",
+		"category": "region-usage",
+		"path": "templates/aws/aws-region-usage-inventory-report.yaml"
 	}
 ]
