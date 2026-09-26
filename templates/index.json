@@ -41,6 +41,12 @@
 		"description": "Finds security groups and elastic network interfaces that are not attached to any resource and removes them.",
 		"cloudProvider": "AWS",
 		"category": "cleanup",
-		"path": "templates/aws/aws-unused-security-groups-cleanup.yaml"
+		"path": "templates/aws/aws-unused-security-groups-cleanup.yaml",
+		"id": "aws-iam-credential-hygiene-checkup",
+		"name": "IAM credential hygiene checkup",
+		"description": "Checks IAM users for access keys past a rotation threshold, credentials unused for a long time, and users without MFA enabled. Report only, changes nothing.",
+		"cloudProvider": "AWS",
+		"category": "checkup",
+		"path": "templates/aws/aws-iam-credential-hygiene-checkup.yaml"
 	}
 ]
