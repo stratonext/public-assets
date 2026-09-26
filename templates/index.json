@@ -6,5 +6,13 @@
 		"cloudProvider": "AWS",
 		"category": "cost-optimization",
 		"path": "templates/aws/aws-cost-and-credits-coverage.yaml"
+	},
+	{
+		"id": "aws-orphaned-ebs-cleanup",
+		"name": "Orphaned EBS volumes and stale snapshots cleanup",
+		"description": "Finds unattached EBS volumes and snapshots past a retention threshold and removes them after confirming they are not referenced by an in-use AMI.",
+		"cloudProvider": "AWS",
+		"category": "cleanup",
+		"path": "templates/aws/aws-orphaned-ebs-cleanup.yaml"
 	}
 ]
