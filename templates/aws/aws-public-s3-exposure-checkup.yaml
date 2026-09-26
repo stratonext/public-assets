@@ -1,0 +1,56 @@
+---
+id: aws-public-s3-exposure-checkup
+name: Public S3 bucket exposure checkup
+description: >
+  Checks every S3 bucket in the account for public read or write access and
+  flags any that are exposed. Report only, changes nothing.
+cloudProvider: AWS
+category: checkup
+version: 1
+tags: [checkup, security, s3]
+---
+task:
+  name: Public S3 bucket exposure checkup
+  description: >
+    Check every S3 bucket in the account for public read or write access and
+    flag any that are exposed. Report only, changes nothing.
+  instructions: |
+    List every S3 bucket in the environment's account. For each bucket:
+
+    1. Check the bucket's public access block settings (account-level and
+       bucket-level) to see whether they allow public access.
+    2. Check the bucket policy for any statement that grants access to a
+       wildcard principal (`*` or `{"AWS": "*"}`) without a condition that
+       restricts it.
+    3. Check the bucket's ACL for any grant to the `AllUsers` or
+       `AuthenticatedUsers` group.
+
+    A bucket is publicly accessible if any of the three checks above allows
+    public read or public write access. For each publicly accessible bucket:
+    - Record exactly which mechanism exposes it (block-settings, policy, or
+      ACL), and whether the exposure is read, write, or both.
+    - Note whether the exposure looks intentional, e.g. the bucket is tagged
+      or named for static website hosting.
+    - Check whether the bucket currently holds any objects.
+
+    Produce a report listing each publicly accessible bucket with how it is
+    exposed, whether it appears intentional, whether it holds objects, and
+    its apparent risk. Upload the report as an artifact in the workspace.
+
+    This is a report only. Do not change any bucket's public access block
+    settings, policy, or ACL, and do not modify any other account resource.
+  verificationCriteria: |
+    Every S3 bucket in the account was checked, and the report lists each
+    publicly accessible bucket with exactly how it is exposed
+    (block-settings, policy, or ACL). No bucket's settings were changed.
+
+placeholders:
+  environment:
+    label: Environment
+    description: The AWS environment whose account's S3 buckets should be checked.
+    required: true
+
+  agent:
+    label: Assignee
+    description: Which agent should run this checkup.
+    required: true

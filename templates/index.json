@@ -6,5 +6,77 @@
 		"cloudProvider": "AWS",
 		"category": "cost-optimization",
 		"path": "templates/aws/aws-cost-and-credits-coverage.yaml"
+	},
+	{
+		"id": "aws-ec2-rightsizing-report",
+		"name": "EC2 rightsizing report",
+		"description": "Finds EC2 instances that are idle or underutilized based on CPU and network metrics and recommends downsizing or termination.",
+		"cloudProvider": "AWS",
+		"category": "cost-optimization",
+		"path": "templates/aws/aws-ec2-rightsizing-report.yaml"
+	},
+	{
+		"id": "aws-reserved-instance-coverage-report",
+		"name": "Reserved Instance and Savings Plan coverage report",
+		"description": "Reports how much on-demand EC2 and RDS spend is covered by existing Reserved Instances or Savings Plans, and flags uncovered usage worth committing to.",
+		"cloudProvider": "AWS",
+		"category": "cost-optimization",
+		"path": "templates/aws/aws-reserved-instance-coverage-report.yaml"
+	},
+	{
+		"id": "aws-orphaned-ebs-cleanup",
+		"name": "Orphaned EBS volumes and stale snapshots cleanup",
+		"description": "Finds unattached EBS volumes and snapshots past a retention threshold and removes them after confirming they are not referenced by an in-use AMI.",
+		"cloudProvider": "AWS",
+		"category": "cleanup",
+		"path": "templates/aws/aws-orphaned-ebs-cleanup.yaml"
+	},
+	{
+		"id": "aws-unused-elastic-ip-cleanup",
+		"name": "Unused Elastic IP cleanup",
+		"description": "Finds Elastic IP addresses not associated with a running instance, NAT gateway, or load balancer, and releases them.",
+		"cloudProvider": "AWS",
+		"category": "cleanup",
+		"path": "templates/aws/aws-unused-elastic-ip-cleanup.yaml"
+	},
+	{
+		"id": "aws-unused-security-groups-cleanup",
+		"name": "Unused security groups and network interfaces cleanup",
+		"description": "Finds security groups and elastic network interfaces that are not attached to any resource and removes them.",
+		"cloudProvider": "AWS",
+		"category": "cleanup",
+		"path": "templates/aws/aws-unused-security-groups-cleanup.yaml"
+	},
+	{
+		"id": "aws-iam-credential-hygiene-checkup",
+		"name": "IAM credential hygiene checkup",
+		"description": "Checks IAM users for access keys past a rotation threshold, credentials unused for a long time, and users without MFA enabled. Report only, changes nothing.",
+		"cloudProvider": "AWS",
+		"category": "checkup",
+		"path": "templates/aws/aws-iam-credential-hygiene-checkup.yaml"
+	},
+	{
+		"id": "aws-public-s3-exposure-checkup",
+		"name": "Public S3 bucket exposure checkup",
+		"description": "Checks every S3 bucket in the account for public read or write access and flags any that are exposed. Report only, changes nothing.",
+		"cloudProvider": "AWS",
+		"category": "checkup",
+		"path": "templates/aws/aws-public-s3-exposure-checkup.yaml"
+	},
+	{
+		"id": "aws-region-usage-inventory-report",
+		"name": "Cross-region resource usage inventory",
+		"description": "Inventories which AWS regions actually have resources in them, to catch forgotten or unexpected regional usage.",
+		"cloudProvider": "AWS",
+		"category": "region-usage",
+		"path": "templates/aws/aws-region-usage-inventory-report.yaml"
+	},
+	{
+		"id": "aws-region-cost-distribution-report",
+		"name": "Region cost distribution report",
+		"description": "Breaks down AWS spend by region to show where cost is concentrated and flags regions with unexpectedly fast-growing spend.",
+		"cloudProvider": "AWS",
+		"category": "region-usage",
+		"path": "templates/aws/aws-region-cost-distribution-report.yaml"
 	}
 ]

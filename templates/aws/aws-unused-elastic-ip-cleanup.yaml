@@ -1,0 +1,61 @@
+---
+id: aws-unused-elastic-ip-cleanup
+name: Unused Elastic IP cleanup
+description: >
+  Finds Elastic IP addresses not associated with a running instance, NAT
+  gateway, or load balancer, and releases them.
+cloudProvider: AWS
+category: cleanup
+version: 1
+tags: [cleanup, networking, elastic-ip]
+---
+task:
+  name: Unused Elastic IP cleanup
+  description: >
+    Find Elastic IP addresses that are not associated with a running EC2
+    instance, NAT gateway, or load balancer, and release them.
+  instructions: |
+    List every Elastic IP address allocated in the {{region}} region of the environment, along with
+    what it is currently associated with, if anything.
+
+    Flag any Elastic IP address that is not associated with a running EC2
+    instance, a NAT gateway, or a load balancer, and has been in that
+    unassociated state for more than {{idle_days}} days.
+
+    Release each flagged Elastic IP address.
+
+    Produce a report listing every address released, along with the monthly
+    cost avoided by releasing it (an unattached Elastic IP is billed hourly,
+    so compute the monthly equivalent from that hourly rate).
+  verificationCriteria: |
+    Every released Elastic IP address had been unassociated with a running
+    EC2 instance, NAT gateway, or load balancer for at least {{idle_days}}
+    days, and the report lists each address released along with the monthly
+    cost avoided.
+
+placeholders:
+  environment:
+    label: Environment
+    description: Which AWS environment to scan for unused Elastic IP addresses.
+    required: true
+
+  agent:
+    label: Assignee
+    description: Which agent should run this cleanup.
+    required: true
+
+  variables:
+    - key: region
+      label: AWS region
+      description: The AWS region to scan for unused Elastic IP addresses (e.g. us-east-1).
+      type: string
+      required: true
+
+    - key: idle_days
+      label: Unassociated threshold (days)
+      description: >
+        Minimum number of days an Elastic IP address must have been
+        unassociated before it is flagged for release.
+      type: number
+      default: 3
+      required: true

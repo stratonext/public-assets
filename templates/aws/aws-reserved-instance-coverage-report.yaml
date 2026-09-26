@@ -1,0 +1,71 @@
+---
+id: aws-reserved-instance-coverage-report
+name: Reserved Instance and Savings Plan coverage report
+description: >
+  Reports how much on-demand EC2 and RDS spend is covered by existing
+  Reserved Instances or Savings Plans, and flags uncovered usage worth
+  committing to.
+cloudProvider: AWS
+category: cost-optimization
+version: 1
+tags: [cost-optimization, reserved-instances, savings-plans]
+---
+task:
+  name: Reserved Instance and Savings Plan coverage report
+  description: >
+    Compute Reserved Instance and Savings Plan coverage for EC2 and RDS
+    usage in the environment, broken down by instance family and region,
+    and flag combinations with coverage below the configured threshold.
+  instructions: |
+    Using AWS Cost Explorer's Reservation and Savings Plans coverage and
+    utilization reports for the environment, pull data for the last
+    {{lookback_days}} days.
+
+    1. Compute overall RI/Savings Plan coverage for EC2 usage and for RDS
+       usage across the environment.
+    2. Break coverage down by instance family and region.
+    3. Flag any instance family/region combination whose coverage is below
+       {{coverage_threshold_percent}}%.
+
+    Produce a report with:
+    - Overall EC2 and RDS coverage percentages for the period.
+    - The utilization rate of existing Reserved Instances and Savings
+      Plans (how much of the purchased commitment is actually being used).
+    - For every flagged family/region combination: its current coverage
+      percentage and the on-demand spend in that combination that could be
+      converted to a commitment.
+
+    Upload the report as an artifact in the workspace.
+  verificationCriteria: |
+    The report states overall EC2 and RDS coverage and the utilization
+    rate of existing commitments, lists every instance family/region
+    combination below {{coverage_threshold_percent}}% coverage together
+    with its on-demand spend, and does not recommend a specific purchase.
+
+placeholders:
+  environment:
+    label: Environment
+    description: The AWS environment to analyze RI and Savings Plan coverage for.
+    required: true
+
+  agent:
+    label: Assignee
+    description: Which agent should run this analysis.
+    required: true
+
+  variables:
+    - key: lookback_days
+      label: Lookback period (days)
+      description: How many days of coverage and utilization data to analyze.
+      type: number
+      default: 30
+      required: true
+
+    - key: coverage_threshold_percent
+      label: Coverage threshold (%)
+      description: >
+        Minimum acceptable RI/Savings Plan coverage percentage; any
+        instance family/region combination below this is flagged.
+      type: number
+      default: 70
+      required: true
