@@ -6,5 +6,13 @@
 		"cloudProvider": "AWS",
 		"category": "cost-optimization",
 		"path": "templates/aws/aws-cost-and-credits-coverage.yaml"
+	},
+	{
+		"id": "aws-iam-credential-hygiene-checkup",
+		"name": "IAM credential hygiene checkup",
+		"description": "Checks IAM users for access keys past a rotation threshold, credentials unused for a long time, and users without MFA enabled. Report only, changes nothing.",
+		"cloudProvider": "AWS",
+		"category": "checkup",
+		"path": "templates/aws/aws-iam-credential-hygiene-checkup.yaml"
 	}
 ]
