@@ -16,7 +16,7 @@ task:
     attached to any resource in the environment, confirm they are unused,
     and remove them.
   instructions: |
-    In the target AWS environment, list every security group that is not
+    In the {{region}} region of the target AWS environment, list every security group that is not
     attached to any running instance, load balancer, or other resource,
     excluding each VPC's default security group (default security groups
     must never be removed).
@@ -54,6 +54,12 @@ placeholders:
     required: true
 
   variables:
+    - key: region
+      label: AWS region
+      description: The AWS region to scan for unused security groups and network interfaces (e.g. us-east-1).
+      type: string
+      required: true
+
     - key: idle_days
       label: Unattached ENI threshold (days)
       description: >

@@ -15,7 +15,7 @@ task:
     Find unattached EBS volumes and stale snapshots, confirm they are not
     referenced by an in-use AMI, then delete them and report the savings.
   instructions: |
-    In the target environment, list every EBS volume in the "available"
+    In the {{region}} region of the target environment, list every EBS volume in the "available"
     (unattached) state that has been in that state for more than
     {{idle_days}} days, and every EBS snapshot older than
     {{snapshot_retention_days}} days whose source volume no longer exists or
@@ -50,6 +50,12 @@ placeholders:
     required: true
 
   variables:
+    - key: region
+      label: AWS region
+      description: The AWS region to scan for orphaned EBS volumes and snapshots (e.g. us-east-1).
+      type: string
+      required: true
+
     - key: idle_days
       label: Unattached threshold (days)
       description: >

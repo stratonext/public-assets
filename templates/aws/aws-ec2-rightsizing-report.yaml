@@ -16,8 +16,8 @@ task:
     metrics, and recommend downsizing or termination for each.
   instructions: |
     Using CloudWatch, pull the CPUUtilization, NetworkIn, and NetworkOut
-    metrics for every EC2 instance in the environment over the last
-    {{lookback_days}} days.
+    metrics for every EC2 instance in the {{region}} region of the
+    environment over the last {{lookback_days}} days.
 
     For each instance:
     1. Compute the average CPU utilization and average network in/out over
@@ -34,12 +34,12 @@ task:
        instance type's price (or the full instance cost, for a
        stop/terminate recommendation).
 
-    Produce a report listing every EC2 instance in the environment, with its
+    Produce a report listing every EC2 instance in the {{region}} region, with its
     current instance type, average CPU utilization, average network
     in/out, and — for flagged instances — the recommendation and estimated
     monthly savings. Upload the report as an artifact in the workspace.
   verificationCriteria: |
-    The report covers every EC2 instance in the environment, lists a
+    The report covers every EC2 instance in the {{region}} region, lists a
     recommendation for each instance whose average CPU utilization stayed
     below {{cpu_threshold_percent}}% for the last {{lookback_days}} days, and
     states an estimated total savings figure.
@@ -56,6 +56,12 @@ placeholders:
     required: true
 
   variables:
+    - key: region
+      label: AWS region
+      description: The AWS region to scan for EC2 instances (e.g. us-east-1).
+      type: string
+      required: true
+
     - key: lookback_days
       label: Lookback period (days)
       description: How many days of CPU and network metrics to analyze.
