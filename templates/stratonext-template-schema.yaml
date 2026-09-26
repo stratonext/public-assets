@@ -1,90 +1,110 @@
-# StratoNext Template Gallery — template definition schema
+# JSON Schema (draft 2020-12) for a StratoNext gallery template, written in YAML.
 #
-# One file = one importable task template. Copy this file, fill it in, and
-# publish it at:
-#   templates/<cloudProvider>/<id>.yaml
-# then add an entry for it to templates/index.json so it shows up in the
-# gallery's browse list. See templates/README.md in this repo for the full
-# authoring guide.
-
-# ---------------------------------------------------------------------------
-# Identity — must match where the file lives.
-# ---------------------------------------------------------------------------
-
-id: aws-orphaned-ec2-cleanup    # kebab-case, unique across the whole gallery,
-                                 # must equal this file's name without ".yaml"
-
-name: Clean up orphaned EC2 instances   # shown as the card title in the gallery
-
-description: >                          # shown as the card subtitle in the gallery
-  Finds EC2 instances that have been stopped for longer than a threshold and
-  terminates them after review.
-
-cloudProvider: AWS               # AWS | AZURE | GOOGLE_CLOUD | CLOUDFLARE | VERCEL | OTHER
-                                  # (matches StratoNext's own environment provider values
-                                  # exactly, so the gallery can render its provider badge).
-                                  # The repo's folder name stays a short lowercase slug
-                                  # (aws/, azure/, gcp/) for readability; it need not match.
-
-tags: [cost-optimization, ec2]  # free-form, used for search/filtering in the gallery
-
-# ---------------------------------------------------------------------------
-# task — what gets created on import: name, description, instructions, and an
-# optional verificationCriteria. Write `{{key}}` anywhere you want a freeform
-# variable's value substituted in at import time — the keys must match a
-# `variables[].key` declared below.
-# ---------------------------------------------------------------------------
-
-task:
-  name: Clean up orphaned EC2 instances
-  description: Identify and remove EC2 instances that are no longer in use.
-  instructions: |
-    List all EC2 instances in {{environment}} that have been stopped for more
-    than {{idle_days}} days. For each one, confirm it has no EBS volume still
-    in active use, then terminate it.
-  verificationCriteria: |
-    Every instance stopped for more than {{idle_days}} days has been
-    terminated, and a summary listing the terminated instance IDs was
-    reported.
-
-# ---------------------------------------------------------------------------
-# placeholders — what the customize step asks the user to fill in before
-# creating the task template. `environment` and `agent` are resolved against
-# the user's own real workspace resources (a picker, not free text); anything
-# under `variables` is a plain value substituted into the `task` fields above.
-# Both `environment` and `agent` are optional — omit either if this template
-# doesn't need it.
-# ---------------------------------------------------------------------------
-
-placeholders:
-  environment:
-    label: Environment
-    description: Which environment to scan for orphaned instances.
-    required: true
-
-  agent:
-    label: Assignee
-    description: Which agent should run this task.
-    required: true
-
-  variables:
-    - key: idle_days              # referenced as {{idle_days}} in `task` above
-      label: Idle threshold (days)
-      description: Minimum number of days stopped before an instance counts as orphaned.
-      type: number                # string | number | boolean
-      default: 14
-      required: true
-
-# ---------------------------------------------------------------------------
-# Manifest entry — add one line like this per template to templates/index.json
-# so it appears in the gallery's browse list (this block is documentation
-# only, it is not part of the template file itself):
+# Every template is validated against this schema when it is imported - fetched at
+# import time, so a schema change here takes effect immediately, no app redeploy needed.
 #
-#   {
-#     "id": "aws-orphaned-ec2-cleanup",
-#     "name": "Clean up orphaned EC2 instances",
-#     "description": "Finds EC2 instances stopped past a threshold and terminates them.",
-#     "cloudProvider": "AWS",
-#     "path": "templates/aws/aws-orphaned-ec2-cleanup.yaml"
-#   }
-# ---------------------------------------------------------------------------
+# A template file uses frontmatter: a `---`-delimited YAML block of metadata (every
+# field below except `task`/`placeholders`), then a second `---`-delimited block
+# holding `task` and `placeholders`. See aws/aws-cost-and-credits-coverage.yaml for a
+# worked example, and templates/README.md in this repo for the authoring guide. This
+# schema describes the two merged into one object.
+$schema: https://json-schema.org/draft/2020-12/schema
+$id: https://raw.githubusercontent.com/stratonext/public-assets/main/templates/stratonext-template-schema.yaml
+title: StratoNext gallery template
+type: object
+required: [id, name, description, cloudProvider, category, version, task]
+additionalProperties: false
+
+properties:
+  id:
+    type: string
+    pattern: "^[a-z0-9]+(-[a-z0-9]+)*$"
+    description: >-
+      Kebab-case, unique across the whole gallery. Must equal this file's
+      name without ".yaml".
+
+  name:
+    type: string
+    minLength: 1
+    description: Title of the template.
+
+  description:
+    type: string
+    minLength: 1
+    description: What the template does.
+
+  cloudProvider:
+    enum: [AWS, AZURE, GOOGLE_CLOUD, CLOUDFLARE, VERCEL, OTHER]
+    description: >-
+      Supported cloud providers
+
+  category:
+    type: string
+    minLength: 1
+    description: >-
+      Grouping of the template in the gallery.
+
+  version:
+    type: integer
+    minimum: 1
+    description: Semantic version of the template.
+
+  tags:
+    type: array
+    items: { type: string }
+    description: >-
+      Free-form, used for search/filtering in the gallery. Multiple allowed.
+
+  task:
+    type: object
+    required: [name, description, instructions]
+    additionalProperties: false
+    description: >-
+      What gets created on import. Write `{{key}}` anywhere a freeform
+      variable's value should be substituted in at import time - the keys
+      must match a placeholders.variables[].key.
+    properties:
+      name: { type: string, minLength: 1 }
+      description: { type: string, minLength: 1 }
+      instructions: { type: string, minLength: 1 }
+      verificationCriteria: { type: string }
+
+  placeholders:
+    type: object
+    additionalProperties: false
+    description: >-
+      What the customize step asks the user to fill in before creating the
+      task template. `environment` and `agent` are resolved against the
+      user's own real workspace resources (a picker, not free text);
+      `variables` are plain values substituted into the `task` fields above.
+    properties:
+      environment: { $ref: "#/$defs/placeholder" }
+      agent: { $ref: "#/$defs/placeholder" }
+      variables:
+        type: array
+        items: { $ref: "#/$defs/variable" }
+
+$defs:
+  placeholder:
+    type: object
+    required: [label]
+    additionalProperties: false
+    properties:
+      label: { type: string, minLength: 1 }
+      description: { type: string }
+      required: { type: boolean }
+
+  variable:
+    type: object
+    required: [key, label, type]
+    additionalProperties: false
+    properties:
+      key:
+        type: string
+        pattern: "^[A-Za-z_][A-Za-z0-9_]*$"
+        description: Referenced as `{{key}}` in the `task` fields above.
+      label: { type: string, minLength: 1 }
+      description: { type: string }
+      type: { enum: [string, number, boolean] }
+      default: { type: [string, number, boolean] }
+      required: { type: boolean }

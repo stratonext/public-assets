@@ -1,15 +1,15 @@
+---
 id: aws-cost-and-credits-coverage
 name: AWS cost and credits coverage report
-
 description: >
   Aggregates AWS spend per linked account across the organization, compares it
   against applied AWS credits, and flags services whose spend is not covered
   by any credit.
-
 cloudProvider: AWS
-
+category: cost-optimization
+version: 1
 tags: [cost-optimization, billing, credits, organizations]
-
+---
 task:
   name: AWS cost and credits coverage report
   description: >
