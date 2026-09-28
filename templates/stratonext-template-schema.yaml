@@ -105,6 +105,12 @@ $defs:
         description: Referenced as `{{key}}` in the `task` fields above.
       label: { type: string, minLength: 1 }
       description: { type: string }
-      type: { enum: [string, number, boolean] }
+      type:
+        enum: [string, number, boolean, aws-region, aws-account-id]
+        description: >-
+          `aws-region` and `aws-account-id` are native types: the app renders
+          a real picker/validated input for them instead of a plain text box
+          (a region Select; a 12-digit-constrained input). More native types
+          follow the `<provider>-<resource>` naming convention.
       default: { type: [string, number, boolean] }
       required: { type: boolean }

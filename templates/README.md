@@ -35,6 +35,24 @@ placeholders:
 ```
 
 
+## Variable types
+
+A `placeholders.variables[]` entry's `type` is usually `string`, `number`, or
+`boolean` — rendered as a plain text input, number input, or toggle.
+
+A few types are **native**: the app renders a real picker or a validated
+input instead of a plain text box.
+
+- `aws-region` — a Select of known AWS regions. Don't give an enum or example
+  text in the `description`; the picker already constrains the value.
+- `aws-account-id` — a text input constrained to exactly 12 digits, matching
+  how the app validates an environment's own AWS account ID field.
+
+More native types will follow the same `<provider>-<resource>` naming
+convention (e.g. a future `aws-account` picker of the user's own linked
+accounts). If a variable doesn't fit an existing native type, `type: string`
+with a clear `description` is still the right default.
+
 ## Adding a template
 
 1. Copy `aws/aws-cost-and-credits-coverage.yaml` (in this folder) as your

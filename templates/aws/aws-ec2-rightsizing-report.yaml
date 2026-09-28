@@ -58,8 +58,8 @@ placeholders:
   variables:
     - key: region
       label: AWS region
-      description: The AWS region to scan for EC2 instances (e.g. us-east-1).
-      type: string
+      description: The AWS region to scan for EC2 instances.
+      type: aws-region
       required: true
 
     - key: lookback_days
