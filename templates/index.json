@@ -48,28 +48,12 @@
 		"path": "templates/aws/aws-unused-security-groups-cleanup.yaml"
 	},
 	{
-		"id": "aws-iam-credential-hygiene-checkup",
-		"name": "IAM credential hygiene checkup",
-		"description": "Checks IAM users for access keys past a rotation threshold, credentials unused for a long time, and users without MFA enabled. Report only, changes nothing.",
-		"cloudProvider": "AWS",
-		"category": "checkup",
-		"path": "templates/aws/aws-iam-credential-hygiene-checkup.yaml"
-	},
-	{
 		"id": "aws-public-s3-exposure-checkup",
 		"name": "Public S3 bucket exposure checkup",
 		"description": "Checks every S3 bucket in the account for public read or write access and flags any that are exposed. Report only, changes nothing.",
 		"cloudProvider": "AWS",
 		"category": "checkup",
 		"path": "templates/aws/aws-public-s3-exposure-checkup.yaml"
-	},
-	{
-		"id": "aws-region-usage-inventory-report",
-		"name": "Cross-region resource usage inventory",
-		"description": "Inventories which AWS regions actually have resources in them, to catch forgotten or unexpected regional usage.",
-		"cloudProvider": "AWS",
-		"category": "region-usage",
-		"path": "templates/aws/aws-region-usage-inventory-report.yaml"
 	},
 	{
 		"id": "aws-region-cost-distribution-report",
