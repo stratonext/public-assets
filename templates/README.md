@@ -35,6 +35,26 @@ placeholders:
 ```
 
 
+## Placeholders
+
+Besides `variables`, `placeholders` can ask for these, each resolved against
+the user's own workspace rather than typed in:
+
+- `project`: a picker of the user's projects. When it is set, the
+  `environment` picker only offers that project's environments.
+- `environment`: a picker of the user's environments. Add `multiple: true`
+  to let the user select several; the task then runs against all of them,
+  so write the instructions per environment ("go through each selected
+  environment").
+- `agent`: which agent runs the task.
+- `schedule`: makes the created task recurring, asking the user to run it
+  every N days. Set `defaultIntervalDays`, and optionally `minIntervalDays`
+  and `maxIntervalDays`. Because the interval can change after import,
+  have a recurring task work out its own period (for example "since the
+  previous report") rather than hard-coding one.
+
+`other/daily-ops-journal.yaml` uses all four.
+
 ## Variable types
 
 A `placeholders.variables[]` entry's `type` is usually `string`, `number`, or

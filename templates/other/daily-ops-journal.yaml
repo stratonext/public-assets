@@ -1,0 +1,209 @@
+---
+id: daily-ops-journal
+name: Daily ops journal
+description: >
+  Writes a recurring operations journal for a project across the customer
+  environments you select: health and incidents, changes and deployments,
+  cost movement, security findings, and open action items, published as a
+  Markdown and a PDF report. Report only, changes nothing.
+cloudProvider: OTHER
+category: operations
+version: 1
+tags: [operations, journal, reporting, daily, health, incidents, cost, security]
+---
+task:
+  name: Daily ops journal
+  description: >
+    Write the ops journal for the selected project and environments,
+    covering everything that happened since the previous journal, and
+    publish it as Markdown and PDF. Report only, changes nothing.
+  instructions: |
+    Write the ops journal for the project selected for this task, covering
+    every environment selected for this task. This task runs on a schedule;
+    each run produces one journal entry. Use {{timezone}} for every date and
+    time in the journal.
+
+    ## 1. Reporting period
+
+    Find the most recent journal this task has already uploaded to the
+    workspace. The period starts where that journal's period ended and ends
+    now, so a missed run is never a gap. If there is no previous journal,
+    cover the last {{first_run_lookback_days}} days. State the exact start
+    and end of the period at the top of the journal.
+
+    Read the previous journal's open action items: every one must appear in
+    this journal again, either as resolved (with what resolved it) or still
+    open.
+
+    ## 2. Gather, per environment
+
+    Go through each selected environment one by one, using that
+    environment's own cloud provider APIs and monitoring. Only use
+    read-only calls. If a source is not available or not enabled for an
+    environment, say so in that environment's section instead of skipping
+    it silently.
+
+    a) **Health and availability**: alarms or alerts that fired, how long
+       they lasted, and whether they are still firing; unhealthy load
+       balancer targets, failed health checks, and instances or containers
+       that restarted or were replaced; provider service-health events that
+       affect the environment.
+
+    b) **Incidents**: anything that degraded or interrupted service. For
+       each: start and end time, impact, suspected or confirmed cause, and
+       current status.
+
+    c) **Changes and deployments**: infrastructure changes made in the
+       period from the provider's audit log (for AWS, CloudTrail), grouped
+       by who made them; deployments and stack or pipeline runs, and
+       whether they succeeded; resources created or deleted. Call out any
+       change made outside the usual automation (console or manual CLI).
+
+    d) **Cost**: spend in the period and the change versus the previous
+       period of the same length; the top 5 services by spend; any service
+       whose spend grew by more than {{cost_anomaly_threshold_percent}}%
+       versus the previous period. Include this section only when cost
+       tracking is turned on: {{include_cost}}.
+
+    e) **Security**: new findings of {{min_security_severity}} severity or
+       higher from the provider's security services (for AWS, Security Hub,
+       GuardDuty, and IAM Access Analyzer), plus any findings from the
+       previous journal that are still open. Include this section only when
+       security tracking is turned on: {{include_security}}.
+
+    f) **Backups and capacity**: backup or snapshot jobs that failed or did
+       not run; quotas, disks, or databases above 80% of capacity.
+
+    ## 3. Write the journal
+
+    Write the journal in Markdown with exactly these sections, in this
+    order:
+
+    1. **Title**: `Ops journal: <project name>, <end date of the period>`,
+       followed by the reporting period and the list of environments
+       covered.
+    2. **Summary**: an overall status for the project (Green, Amber, or
+       Red), and three to five bullets with what matters most. Red means an
+       unresolved incident or a critical security finding; Amber means a
+       resolved incident, a firing alarm, a cost anomaly, or a failed
+       backup; Green means none of these.
+    3. **Environment status**: one table with a row per environment and the
+       columns Environment, Status, Alarms, Incidents, Changes, Spend,
+       Spend change, and New security findings.
+    4. **Incidents**: every incident across environments, newest first, or
+       "No incidents in this period."
+    5. **Per-environment detail**: one subsection per environment with the
+       findings from section 2, using tables for lists of items.
+    6. **Action items**: a table with the columns Item, Environment,
+       Owner (if known), Opened on, and Status. Include the items carried
+       over from the previous journal and new ones raised by this run.
+    7. **Notes**: data sources that were unavailable and anything that
+       could not be checked.
+
+    Keep the tone factual and short. Every claim must point to evidence:
+    a resource id, an alarm name, an audit-log event, or a figure.
+
+    ## 4. Publish
+
+    Save the journal as two files with the same content:
+    - `ops-journal-<project-slug>-<YYYY-MM-DD>.md`, the Markdown above.
+    - `ops-journal-<project-slug>-<YYYY-MM-DD>.pdf`, rendered from that
+      Markdown on A4 pages, with the title and period on the first page,
+      tables kept readable (repeat header rows when a table breaks across
+      pages), and page numbers in the footer.
+    `<YYYY-MM-DD>` is the end date of the period and `<project-slug>` is
+    the project name in lowercase kebab-case. Upload both files as
+    artifacts in the workspace.
+
+    This is a report only. Do not create, modify, stop, or delete any
+    resource, acknowledge or silence any alarm, or change any setting.
+  verificationCriteria: |
+    A Markdown and a PDF journal have been uploaded as artifacts, named
+    `ops-journal-<project-slug>-<YYYY-MM-DD>` with the same content. The
+    journal states its reporting period, starting where the previous
+    journal ended (or covering the last {{first_run_lookback_days}} days on
+    the first run), and covers every selected environment. It contains the
+    title, summary with an overall status, environment status table,
+    incidents, per-environment detail, action items, and notes sections,
+    in that order. Every open action item from the previous journal appears
+    again as resolved or still open. No resource, alarm, or setting was
+    changed.
+
+placeholders:
+  project:
+    label: Project
+    description: The project to write the ops journal for.
+    required: true
+
+  environment:
+    label: Environments
+    description: >
+      The project's environments to cover, for example production and
+      staging. Each one gets its own section in the journal.
+    required: true
+    multiple: true
+
+  agent:
+    label: Assignee
+    description: Which agent should write the journal.
+    required: true
+
+  schedule:
+    label: Run every
+    description: >
+      How often to write a journal, in days. Each journal covers the time
+      since the previous one.
+    required: true
+    defaultIntervalDays: 1
+    minIntervalDays: 1
+    maxIntervalDays: 30
+
+  variables:
+    - key: timezone
+      label: Time zone
+      description: >
+        IANA time zone used for every date and time in the journal, for
+        example Europe/Rome or America/New_York.
+      type: string
+      default: UTC
+      required: true
+
+    - key: first_run_lookback_days
+      label: First run lookback (days)
+      description: >
+        How many days the first journal covers, before there is a previous
+        journal to continue from.
+      type: number
+      default: 1
+      required: true
+
+    - key: include_cost
+      label: Include cost
+      description: Add a cost section per environment with spend changes and anomalies.
+      type: boolean
+      default: true
+      required: true
+
+    - key: cost_anomaly_threshold_percent
+      label: Cost anomaly threshold (%)
+      description: >
+        Minimum period-over-period spend growth, as a percentage, to flag a
+        service as a cost anomaly.
+      type: number
+      default: 20
+      required: true
+
+    - key: include_security
+      label: Include security
+      description: Add a security section per environment with new findings.
+      type: boolean
+      default: true
+      required: true
+
+    - key: min_security_severity
+      label: Minimum security severity
+      description: >
+        Lowest finding severity to report: LOW, MEDIUM, HIGH, or CRITICAL.
+      type: string
+      default: HIGH
+      required: true

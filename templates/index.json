@@ -62,5 +62,13 @@
 		"cloudProvider": "AWS",
 		"category": "region-usage",
 		"path": "templates/aws/aws-region-cost-distribution-report.yaml"
+	},
+	{
+		"id": "daily-ops-journal",
+		"name": "Daily ops journal",
+		"description": "Writes a recurring operations journal for a project across the customer environments you select: health and incidents, changes and deployments, cost movement, security findings, and open action items, published as a Markdown and a PDF report. Report only, changes nothing.",
+		"cloudProvider": "OTHER",
+		"category": "operations",
+		"path": "templates/other/daily-ops-journal.yaml"
 	}
 ]
