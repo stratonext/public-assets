@@ -56,6 +56,14 @@
 		"path": "templates/aws/aws-public-s3-exposure-checkup.yaml"
 	},
 	{
+		"id": "aws-account-health-checkup",
+		"name": "AWS account health checkup and StratoNext routine plan",
+		"description": "Audits an AWS account for cost savings, resource clutter, and high-severity security findings, then proposes one-off tasks and a recurring maintenance routine built from StratoNext templates, tailored to what is actually in the account. Report only, changes nothing.",
+		"cloudProvider": "AWS",
+		"category": "checkup",
+		"path": "templates/aws/aws-account-health-checkup.yaml"
+	},
+	{
 		"id": "aws-region-cost-distribution-report",
 		"name": "Region cost distribution report",
 		"description": "Breaks down AWS spend by region to show where cost is concentrated and flags regions with unexpectedly fast-growing spend.",

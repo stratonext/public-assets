@@ -1,0 +1,225 @@
+---
+id: aws-account-health-checkup
+name: AWS account health checkup and StratoNext routine plan
+description: >
+  Audits an AWS account for cost savings, resource clutter, and high-severity
+  security findings, then proposes one-off tasks and a recurring maintenance
+  routine built from StratoNext templates, tailored to what is actually in
+  the account. Report only, changes nothing.
+cloudProvider: AWS
+category: checkup
+version: 1
+tags: [checkup, cost-optimization, cleanup, security, maintenance, recommendations]
+---
+task:
+  name: AWS account health checkup and StratoNext routine plan
+  description: >
+    Audit the AWS account for cost savings, clutter, and high-severity
+    security findings, then recommend one-off tasks and a recurring
+    maintenance routine to run in StratoNext. Report only, changes nothing.
+  instructions: |
+    Run a read-only health checkup of the environment's AWS account and turn
+    what you find into an action plan the user can carry out in StratoNext.
+    Start in the {{region}} region.
+
+    Scan all enabled regions: {{scan_all_enabled_regions}}. When this is
+    true, also cover every other region that is enabled for the account and
+    has either resources or spend in the last {{lookback_days}} days; when
+    it is false, stay in {{region}} only. Cost Explorer data is account-wide
+    either way.
+
+    ## 1. Account snapshot
+
+    Build a short picture of the account so every recommendation can be
+    tailored to it:
+    - Total spend for the last {{lookback_days}} days from AWS Cost
+      Explorer, the projected monthly spend, and the change versus the
+      previous period of the same length.
+    - The top 10 services and the top regions by spend.
+    - Whether the account is an AWS Organizations management (payer)
+      account or a linked account, and whether any AWS credits are applied.
+    - An inventory of what is in use: EC2, EBS, RDS, Lambda, ECS/EKS, S3,
+      load balancers, NAT gateways, Elastic IPs, and any other service with
+      meaningful spend.
+    - Which security services are enabled: Security Hub, GuardDuty, IAM
+      Access Analyzer, AWS Config, and CloudTrail (multi-region or not).
+
+    ## 2. Cost optimization
+
+    Look for savings and estimate a monthly USD figure for each one:
+    - Idle or underutilized EC2 and RDS instances (low CPU and network over
+      the lookback period), and previous-generation instance families.
+    - Steady on-demand EC2, RDS, Fargate, or Lambda usage that is not
+      covered by Reserved Instances or Savings Plans.
+    - gp2 EBS volumes that could move to gp3, and over-provisioned io1/io2
+      IOPS.
+    - NAT gateway data processing charges that a VPC gateway endpoint (S3,
+      DynamoDB) could reduce.
+    - S3 buckets with no lifecycle policy holding large amounts of data in
+      the Standard storage class.
+    - Fast-growing services or regions compared with the previous period.
+
+    ## 3. Clutter
+
+    Find resources that cost money or add noise without doing anything:
+    - Unattached EBS volumes and snapshots older than
+      {{snapshot_retention_days}} days that do not back a registered AMI.
+    - Elastic IPs not associated with a running instance, NAT gateway, or
+      load balancer.
+    - Security groups and network interfaces not attached to anything.
+    - EC2 instances stopped for more than {{idle_days}} days.
+    - Load balancers with no healthy targets, and AMIs not used by any
+      instance or launch template.
+    - CloudWatch log groups with no retention policy, and empty S3 buckets.
+    - Resources missing basic ownership tags (for example `Owner`,
+      `Environment`, or `Project`).
+
+    ## 4. High-severity security findings
+
+    Report only findings of HIGH or CRITICAL severity, or their equivalent:
+    - Active HIGH/CRITICAL findings from Security Hub, GuardDuty, and IAM
+      Access Analyzer, where those services are enabled.
+    - Root user without MFA, or with access keys.
+    - IAM users with console access but no MFA, and access keys older than
+      90 days or unused for 90 days.
+    - Security groups that allow 0.0.0.0/0 or ::/0 on SSH (22), RDP (3389),
+      or database ports.
+    - Publicly accessible S3 buckets, RDS instances, or EBS/RDS snapshots.
+    - CloudTrail not enabled in every region, and unencrypted EBS volumes
+      or RDS instances holding data.
+    If Security Hub or GuardDuty is not enabled, say so as a finding in its
+    own right instead of skipping the section.
+
+    ## 5. Recommendations: how to use StratoNext
+
+    Turn the findings into a plan. Only recommend something when the account
+    actually has the resource or problem it addresses, and skip anything
+    whose estimated monthly saving is below {{min_monthly_savings_usd}} USD
+    unless it is a security finding. Where a StratoNext gallery template
+    covers the work, name it by its template id so the user can import it.
+    Cleanup templates are region-scoped, so say which region(s) each one
+    should be imported for.
+
+    Gallery templates you can recommend:
+    - `aws-cost-and-credits-coverage`: spend vs. applied credits, for
+      management accounts or accounts with credits.
+    - `aws-region-cost-distribution-report`: spend by region and
+      fast-growing regions.
+    - `aws-ec2-rightsizing-report`: idle and underutilized EC2 instances.
+    - `aws-reserved-instance-coverage-report`: RI and Savings Plan coverage
+      gaps.
+    - `aws-orphaned-ebs-cleanup`: unattached volumes and stale snapshots.
+    - `aws-unused-elastic-ip-cleanup`: unassociated Elastic IPs.
+    - `aws-unused-security-groups-cleanup`: unused security groups and ENIs.
+    - `aws-public-s3-exposure-checkup`: public S3 bucket exposure.
+    For anything no template covers, write it as a custom StratoNext task:
+    a one-line name and a short description of what the agent should do.
+
+    Split the plan into two lists:
+
+    a) **One-off tasks** to run once now, ranked by impact (security first,
+       then estimated monthly saving). For each: the problem, the evidence
+       (resource ids, counts, cost), the StratoNext template id or custom
+       task to use, the region(s), the suggested variable values, and
+       whether it only reports or changes resources.
+
+    b) **Recurring routine**: tasks to schedule in StratoNext to keep the
+       account clean, cheap, and safe. For each: the task, the template id
+       or custom task, the suggested cadence, and why that cadence fits
+       this account. Pick cadences from what you found, for example:
+       - Daily: cleanup of clutter that keeps reappearing (orphaned volumes,
+         unassociated Elastic IPs, unused security groups) in regions with
+         heavy churn.
+       - Every 2 days: a cost report on spend trends and anomalies when
+         projected monthly spend is high or growing fast.
+       - Weekly: a high-severity security review and a public S3 exposure
+         checkup.
+       - Monthly: rightsizing, RI/Savings Plan coverage, region cost
+         distribution, and credits coverage.
+       Use a lighter cadence for small, stable accounts and a tighter one
+       for large, fast-changing, or growing ones, and say which you chose.
+
+    ## 6. Report
+
+    Produce a single report with these sections: an executive summary
+    (three to five bullets, total estimated monthly savings, number of
+    high-severity security findings), the account snapshot, findings for
+    cost, clutter, and security, the one-off task list, and the recurring
+    routine. Upload the report as an artifact in the workspace.
+
+    This is a report only. Do not create, modify, stop, or delete any
+    resource, change any setting, or enable any service, even where the
+    report recommends it.
+  verificationCriteria: |
+    The report covers the {{region}} region (and every other enabled region
+    with resources or spend, when scanning all enabled regions was
+    requested) and contains an executive summary, an account snapshot,
+    findings for cost, clutter, and high-severity security, a ranked list of
+    one-off tasks, and a recurring routine with a cadence for each task.
+    Every recommendation is backed by evidence found in the account, names
+    a StratoNext gallery template id or a custom task, and cost
+    recommendations below {{min_monthly_savings_usd}} USD per month are left
+    out. No account resource or setting was changed. The report has been
+    uploaded as an artifact.
+
+placeholders:
+  environment:
+    label: Environment
+    description: The AWS environment whose account should be checked.
+    required: true
+
+  agent:
+    label: Assignee
+    description: Which agent should run this checkup.
+    required: true
+
+  variables:
+    - key: region
+      label: Primary AWS region
+      description: The region to start the checkup in, usually where most resources run.
+      type: aws-region
+      required: true
+
+    - key: scan_all_enabled_regions
+      label: Scan all enabled regions
+      description: >
+        Also check every other enabled region that has resources or spend.
+        Turn off to check the primary region only.
+      type: boolean
+      default: true
+      required: true
+
+    - key: lookback_days
+      label: Lookback period (days)
+      description: How many days of cost, usage, and utilization data to analyze.
+      type: number
+      default: 30
+      required: true
+
+    - key: min_monthly_savings_usd
+      label: Minimum monthly savings (USD)
+      description: >
+        Leave out cost recommendations that would save less than this per
+        month, to keep the plan focused. Security findings are always
+        reported.
+      type: number
+      default: 20
+      required: true
+
+    - key: idle_days
+      label: Stopped instance threshold (days)
+      description: >
+        Minimum number of days an EC2 instance must have been stopped to be
+        reported as clutter.
+      type: number
+      default: 30
+      required: true
+
+    - key: snapshot_retention_days
+      label: Snapshot age threshold (days)
+      description: >
+        Minimum age, in days, for an orphaned snapshot to be reported as
+        clutter.
+      type: number
+      default: 90
+      required: true
