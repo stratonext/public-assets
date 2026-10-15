@@ -64,11 +64,11 @@
 		"path": "templates/aws/aws-region-cost-distribution-report.yaml"
 	},
 	{
-		"id": "aws-stack-architecture-diagram",
+		"id": "deployment-architecture-diagram",
 		"name": "Deployment architecture diagram and component report",
-		"description": "Downloads the template and resource graph of a single CloudFormation stack (CloudFormation, CDK, or SAM deployment), renders it as a PNG architecture diagram, and produces a table report of every component in it. Report only, changes nothing.",
-		"cloudProvider": "AWS",
+		"description": "Takes the project deployment graph StratoNext provides, renders it as a PNG architecture diagram, and produces a table report of every component in it. One deployment, single run, report only.",
+		"cloudProvider": "OTHER",
 		"category": "architecture",
-		"path": "templates/aws/aws-stack-architecture-diagram.yaml"
+		"path": "templates/other/deployment-architecture-diagram.yaml"
 	}
 ]
