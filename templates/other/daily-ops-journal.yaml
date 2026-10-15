@@ -5,7 +5,8 @@ description: >
   Writes a recurring operations journal for a project across the customer
   environments you select: health and incidents, changes and deployments,
   cost movement, security findings, and open action items, published as a
-  Markdown and a PDF report. Report only, changes nothing.
+  newspaper-style one-page PDF front page plus a complete Markdown journal.
+  Report only, changes nothing.
 cloudProvider: OTHER
 category: operations
 version: 1
@@ -16,7 +17,8 @@ task:
   description: >
     Write the ops journal for the selected project and environments,
     covering everything that happened since the previous journal, and
-    publish it as Markdown and PDF. Report only, changes nothing.
+    publish it as a newspaper-style PDF front page and a Markdown journal.
+    Report only, changes nothing.
   instructions: |
     Write the ops journal for the project selected for this task, covering
     every environment selected for this task. This task runs on a schedule;
@@ -74,60 +76,145 @@ task:
     f) **Backups and capacity**: backup or snapshot jobs that failed or did
        not run; quotas, disks, or databases above 80% of capacity.
 
-    ## 3. Write the journal
+    ## 3. Curate into a front page
 
-    Write the journal in Markdown with exactly these sections, in this
-    order:
+    The journal is styled as a one-page newspaper front page, like the Wall
+    Street Journal. Pick from what you gathered:
+    - One **lead**: the single most important ops event of the period, in
+      this order of priority: an unresolved incident, a critical security
+      finding, a resolved incident, a failed or risky change, a cost
+      anomaly, a failed backup. If nothing qualifies, the lead is an
+      "all clear" story stating that the environments ran without
+      incidents, with the period's notable figures.
+    - One to three **secondary** stories: the next most important events.
+    - **Security**: the security findings from section 2e, or an empty
+      list when there are none.
+    - **Action items**: every item carried over from the previous journal
+      plus new ones raised by this run.
+    - Optionally a handful of one-line **briefs**: minor items worth a
+      mention but not a full story (a routine deployment, a closed alarm, a
+      small cost movement).
 
-    1. **Title**: `Ops journal: <project name>, <end date of the period>`,
-       followed by the reporting period and the list of environments
-       covered.
-    2. **Summary**: an overall status for the project (Green, Amber, or
-       Red), and three to five bullets with what matters most. Red means an
-       unresolved incident or a critical security finding; Amber means a
-       resolved incident, a firing alarm, a cost anomaly, or a failed
-       backup; Green means none of these.
-    3. **Environment status**: one table with a row per environment and the
-       columns Environment, Status, Alarms, Incidents, Changes, Spend,
-       Spend change, and New security findings.
-    4. **Incidents**: every incident across environments, newest first, or
-       "No incidents in this period."
-    5. **Per-environment detail**: one subsection per environment with the
-       findings from section 2, using tables for lists of items.
-    6. **Action items**: a table with the columns Item, Environment,
-       Owner (if known), Opened on, and Status. Include the items carried
-       over from the previous journal and new ones raised by this run.
-    7. **Notes**: data sources that were unavailable and anything that
-       could not be checked.
+    Write original 2-4 sentence stories in plain language for each item.
+    Every item must carry its evidence in a `source` line: the environment,
+    and a resource id, alarm name, audit-log event, or figure with its
+    timestamp. Discard anything you cannot back with evidence; never pad a
+    quiet period with filler. An empty section is a valid, honest result.
 
-    Keep the tone factual and short. Every claim must point to evidence:
-    a resource id, an alarm name, an audit-log event, or a figure.
+    Set the overall status: Red means an unresolved incident or a critical
+    security finding; Amber means a resolved incident, a firing alarm, a
+    cost anomaly, or a failed backup; Green means none of these.
 
-    ## 4. Publish
+    ## 4. Build the data file
 
-    Save the journal as two files with the same content:
-    - `ops-journal-<project-slug>-<YYYY-MM-DD>.md`, the Markdown above.
-    - `ops-journal-<project-slug>-<YYYY-MM-DD>.pdf`, rendered from that
-      Markdown on A4 pages, with the title and period on the first page,
-      tables kept readable (repeat header rows when a table breaks across
-      pages), and page numbers in the footer.
-    `<YYYY-MM-DD>` is the end date of the period and `<project-slug>` is
-    the project name in lowercase kebab-case. Upload both files as
-    artifacts in the workspace.
+    Write a JSON file with this shape. It is the single source both
+    renderings are built from:
+
+    ```json
+    {
+      "project": "<project name>",
+      "date": "October 15, 2026",
+      "date_slug": "2026-10-15",
+      "period": "Oct 14, 2026 09:00 - Oct 15, 2026 09:00 <timezone>",
+      "status": "Green | Amber | Red",
+      "tagline": "Operations Journal - <environment names>",
+      "lead": {
+        "section": "INCIDENT | SECURITY | CHANGES | COST | BACKUPS | ALL CLEAR",
+        "headline": "...",
+        "dek": "one-line subhead",
+        "byline": "Compiled from <data sources, e.g. CloudWatch, CloudTrail>",
+        "body": "paragraph one\n\nparagraph two",
+        "source": "<environment>, <evidence>, <timestamp>"
+      },
+      "secondary": [ {"headline": "...", "body": "...", "source": "..."} ],
+      "environments": [
+        {"name": "...", "status": "Green | Amber | Red", "alarms": 0,
+         "incidents": 0, "changes": 0, "spend": "USD ...",
+         "spend_change": "+4%", "new_security_findings": 0}
+      ],
+      "security": [ {"headline": "...", "body": "...", "source": "..."} ],
+      "action_items": [
+        {"item": "...", "environment": "...", "owner": "...",
+         "opened_on": "2026-10-12", "status": "Open | Resolved"}
+      ],
+      "briefs": [ {"headline": "...", "body": "...", "source": "..."} ],
+      "detail": [
+        {"environment": "...", "health": "...", "incidents": "...",
+         "changes": "...", "cost": "...", "security": "...",
+         "backups_and_capacity": "..."}
+      ],
+      "notes": [ "data sources that were unavailable or could not be checked" ]
+    }
+    ```
+
+    Leave out the cost columns and story candidates when cost tracking is
+    off, and the security list when security tracking is off.
+
+    ## 5. Render the Markdown
+
+    Render the data file to Markdown, in this order: the masthead line
+    `# <project> Ops Daily`, the date, period, overall status and tagline;
+    the lead (section label, headline, dek, byline, body, source); the
+    secondary stories; an environment status table; security (or "No new
+    security findings in this period."); an action items table; the briefs;
+    a per-environment detail section from `detail`; and the notes. The
+    Markdown is the complete record: it keeps everything, including any
+    items trimmed from the PDF.
+
+    ## 6. Render the PDF front page
+
+    Render the same data as HTML and print it to PDF (for example with
+    headless Chromium or WeasyPrint), on one US Letter page with 0.5 inch
+    margins, in a Wall Street Journal front-page style:
+    - **Masthead**: `<project> Ops Daily` centered in a large, bold serif
+      (Georgia or Times New Roman), with the tagline in small caps under
+      it. Below it, a dateline bar between thin double rules: the date on
+      the left, the period in the middle, and the overall status on the
+      right, in green, amber, or red.
+    - **Body**: black serif text on white with no other colors, in columns
+      separated by thin vertical rules. The lead runs across the two left
+      columns with an uppercase section label, a large bold headline, an
+      italic dek, a small-caps byline, and the body; the right column holds
+      the environment status box and the action items. Secondary stories
+      and security follow in columns below, then a "Briefs" strip of
+      one-liners.
+    - Each story ends with its `source` line in small italic type.
+    - Empty sections print a single honest line instead of disappearing:
+      "No new security findings in this period.", "No open action items.",
+      "No incidents in this period."
+
+    It must fit on one page. Check the page count of the PDF; if it is
+    more than one, trim the briefs first, then the secondary stories down
+    to one, then shorten the bodies. Never drop the lead, the environment
+    status box, security, or action items. The `detail` and `notes` are
+    for the Markdown only.
+
+    ## 7. Publish
+
+    Upload three artifacts to the workspace, named from the project name in
+    lowercase kebab-case (`<project-slug>`) and the end date of the period
+    (`<YYYY-MM-DD>`):
+    - `ops-journal-<project-slug>-<YYYY-MM-DD>.md`, the Markdown journal.
+    - `ops-journal-<project-slug>-<YYYY-MM-DD>.pdf`, the front page.
+    - `ops-journal-<project-slug>-<YYYY-MM-DD>.json`, the data file; the
+      next run reads its `period` and `action_items` to continue from.
 
     This is a report only. Do not create, modify, stop, or delete any
     resource, acknowledge or silence any alarm, or change any setting.
   verificationCriteria: |
-    A Markdown and a PDF journal have been uploaded as artifacts, named
-    `ops-journal-<project-slug>-<YYYY-MM-DD>` with the same content. The
-    journal states its reporting period, starting where the previous
-    journal ended (or covering the last {{first_run_lookback_days}} days on
-    the first run), and covers every selected environment. It contains the
-    title, summary with an overall status, environment status table,
-    incidents, per-environment detail, action items, and notes sections,
-    in that order. Every open action item from the previous journal appears
-    again as resolved or still open. No resource, alarm, or setting was
-    changed.
+    Three artifacts have been uploaded, named
+    `ops-journal-<project-slug>-<YYYY-MM-DD>` with the extensions `.md`,
+    `.pdf`, and `.json`, all built from the same data. The journal states
+    its reporting period, starting where the previous journal ended (or
+    covering the last {{first_run_lookback_days}} days on the first run),
+    and covers every selected environment. The PDF is a single page in a
+    newspaper front-page style with a masthead, a dateline with the overall
+    status, a lead story, the environment status box, security, and action
+    items. The Markdown has every section, including per-environment detail
+    and notes. Every story carries evidence in its source line, empty
+    sections say so instead of being padded, and every open action item
+    from the previous journal appears again as resolved or still open. No
+    resource, alarm, or setting was changed.
 
 placeholders:
   project:
