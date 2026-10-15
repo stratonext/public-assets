@@ -62,5 +62,13 @@
 		"cloudProvider": "AWS",
 		"category": "region-usage",
 		"path": "templates/aws/aws-region-cost-distribution-report.yaml"
+	},
+	{
+		"id": "aws-stack-architecture-diagram",
+		"name": "Deployment architecture diagram and component report",
+		"description": "Downloads the template and resource graph of a single CloudFormation stack (CloudFormation, CDK, or SAM deployment), renders it as a PNG architecture diagram, and produces a table report of every component in it. Report only, changes nothing.",
+		"cloudProvider": "AWS",
+		"category": "architecture",
+		"path": "templates/aws/aws-stack-architecture-diagram.yaml"
 	}
 ]

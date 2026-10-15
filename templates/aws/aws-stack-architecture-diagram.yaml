@@ -1,0 +1,120 @@
+---
+id: aws-stack-architecture-diagram
+name: Deployment architecture diagram and component report
+description: >
+  Downloads the template and resource graph of a single CloudFormation stack
+  (CloudFormation, CDK, or SAM deployment), renders it as a PNG architecture
+  diagram, and produces a table report of every component in it. Report
+  only, changes nothing.
+cloudProvider: AWS
+category: architecture
+version: 1
+tags: [architecture, diagram, cloudformation, inventory]
+---
+task:
+  name: Deployment architecture diagram and component report
+  description: >
+    Draw the architecture of the {{stack_name}} deployment in {{region}} as a
+    PNG diagram and produce a table report of its components. Runs once,
+    report only, changes nothing.
+  instructions: |
+    This covers exactly one deployment: the CloudFormation stack
+    `{{stack_name}}` in the {{region}} region of the environment's account.
+    CDK apps and SAM applications deploy as CloudFormation stacks, so use
+    the stack name they deployed under. Do not diagram any other stack.
+
+    1. Download the graph.
+       - Describe the stack to confirm it exists and record its status,
+         creation and last-updated time, description, parameters, outputs,
+         and tags. If the stack does not exist or is in a `*_FAILED` or
+         `DELETE_*` state, stop and report that instead of drawing a diagram.
+       - Download the stack's deployed template (`GetTemplate`, processed
+         stage so SAM/CDK transforms are expanded).
+       - List every resource in the stack (`ListStackResources`) with its
+         logical ID, physical ID, resource type, and status.
+       - If the stack has nested stacks (`AWS::CloudFormation::Stack`),
+         download each nested stack's template and resources too and draw
+         them as grouped sub-sections of the same diagram.
+
+    2. Build the dependency graph from the template.
+       - One node per resource, labelled with its logical ID and short
+         resource type (e.g. `Lambda Function`, `S3 Bucket`).
+       - One directed edge for every `Ref`, `Fn::GetAtt`, `Fn::Sub`
+         reference and `DependsOn` between resources. Label edges for event
+         sources, integrations, and IAM role attachments where the
+         relationship is clear (e.g. `invokes`, `triggers`, `assumes`).
+       - Group nodes into clusters by VPC / subnet where networking
+         resources are present, otherwise by service layer (edge/API,
+         compute, data/storage, messaging, security/IAM, monitoring).
+       - Show stack parameters as inputs and stack outputs as exits of the
+         graph.
+
+    3. Render the diagram as a PNG.
+       - Use Graphviz (the `diagrams` Python package with official AWS
+         icons if available, plain Graphviz `dot` otherwise), left-to-right
+         layout, at least 150 DPI, white background.
+       - Use AWS service icons or AWS service-category colours so each
+         node's service is recognizable at a glance; keep labels readable
+         with no overlapping nodes or edges crossing labels where avoidable.
+       - Title the image with the stack name, region, account ID, stack
+         status, and the date the diagram was generated.
+       - Collapse low-signal helper resources (e.g. `AWS::Lambda::Permission`,
+         `AWS::IAM::Policy`, CDK `Custom::CDKBucketDeployment` helpers, the
+         `CDKMetadata` resource) into their owning node so the diagram stays
+         readable; they still appear in the table in step 4.
+       - Save it as `{{stack_name}}-architecture.png`.
+
+    4. Produce the component table report.
+       - One row per resource in the stack (including nested stacks and the
+         helper resources collapsed in the diagram), with columns: logical
+         ID, resource type, physical ID / ARN, service layer, status,
+         depends on (logical IDs), and key configuration (e.g. runtime and
+         memory for Lambda, instance class and engine for RDS, billing mode
+         for DynamoDB).
+       - Sort rows by service layer, then resource type, then logical ID.
+       - Above the table, add a summary: stack name, region, account,
+         status, last updated, total resource count, and a count of
+         resources per resource type. Below it, list the stack's parameters
+         and outputs.
+       - Embed the PNG at the top of the report and save the report as
+         Markdown (`{{stack_name}}-components.md`) and the table as CSV
+         (`{{stack_name}}-components.csv`).
+
+    Upload the PNG, the Markdown report, and the CSV as artifacts in the
+    workspace.
+
+    This is a one-off, report-only run. Do not create, update, or delete the
+    stack, any change set, or any other account resource, and do not set up
+    a schedule or recurring run.
+  verificationCriteria: |
+    A PNG diagram of the `{{stack_name}}` stack in {{region}} was uploaded,
+    showing its resources and their dependencies, and a component report
+    lists every resource returned by ListStackResources (including nested
+    stacks) with its logical ID, type, physical ID, and status. No stack or
+    account resource was changed and no schedule was created.
+
+placeholders:
+  environment:
+    label: Environment
+    description: The AWS environment whose account holds the deployment.
+    required: true
+
+  agent:
+    label: Assignee
+    description: Which agent should draw the diagram and write the report.
+    required: true
+
+  variables:
+    - key: stack_name
+      label: CloudFormation stack name
+      description: >
+        Name of the single CloudFormation stack (CloudFormation, CDK, or SAM
+        deployment) to diagram.
+      type: string
+      required: true
+
+    - key: region
+      label: AWS region
+      description: The AWS region the stack is deployed in.
+      type: aws-region
+      required: true
