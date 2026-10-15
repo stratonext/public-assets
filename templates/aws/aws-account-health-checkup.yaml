@@ -123,10 +123,10 @@ task:
        task to use, the region(s), the suggested variable values, and
        whether it only reports or changes resources.
 
-    b) **Recurring routine**: tasks to schedule in StratoNext to keep the
-       account clean, cheap, and safe. For each: the task, the template id
-       or custom task, the suggested cadence, and why that cadence fits
-       this account. Pick cadences from what you found, for example:
+    b) **Recurring routine**: tasks to keep the account clean, cheap, and
+       safe over time. For each: the task, the template id or custom task,
+       the region(s), the suggested cadence, and why that cadence fits this
+       account. Pick cadences from what you found, for example:
        - Daily: cleanup of clutter that keeps reappearing (orphaned volumes,
          unassociated Elastic IPs, unused security groups) in regions with
          heavy churn.
@@ -141,21 +141,48 @@ task:
 
     ## 6. Report
 
-    Produce a single report with these sections: an executive summary
-    (three to five bullets, total estimated monthly savings, number of
-    high-severity security findings), the account snapshot, findings for
-    cost, clutter, and security, the one-off task list, and the recurring
-    routine. Upload the report as an artifact in the workspace.
+    Produce a single report with these sections, in this order:
+    1. Executive summary: three to five bullets, total estimated monthly
+       savings, and the number of high-severity security findings.
+    2. Account snapshot.
+    3. Findings: cost, clutter, and security.
+    4. One-off tasks.
+    5. Recurring routine.
+    6. **Proposed scheduled tasks**, always the last section. Close the
+       report with a short call to action asking the user to schedule these
+       tasks in StratoNext as a follow-up, then a table with one row per
+       recurring task from the routine, ordered by cadence (most frequent
+       first), with these columns:
+       - Task name, as it should appear in StratoNext.
+       - StratoNext template id to import, or "custom" with a one-line
+         description of what the agent should do.
+       - Region(s), or "account-wide".
+       - Schedule: the cadence in plain words (for example "Every 2 days")
+         and a matching cron expression in UTC (for example
+         `0 6 */2 * *`). Stagger start times so tasks do not all run at
+         once.
+       - Suggested variable values for the template.
+       - Mode: "report only" or "changes resources". For tasks that change
+         resources, recommend that the user run them once manually and
+         review the result before scheduling them.
+
+    Upload the report as an artifact in the workspace.
 
     This is a report only. Do not create, modify, stop, or delete any
     resource, change any setting, or enable any service, even where the
-    report recommends it.
+    report recommends it. Do not create or schedule StratoNext tasks
+    either; scheduling is left to the user as the follow-up.
   verificationCriteria: |
     The report covers the {{region}} region (and every other enabled region
     with resources or spend, when scanning all enabled regions was
     requested) and contains an executive summary, an account snapshot,
     findings for cost, clutter, and high-severity security, a ranked list of
     one-off tasks, and a recurring routine with a cadence for each task.
+    The report ends with a "Proposed scheduled tasks" section that asks the
+    user to schedule them in StratoNext and lists every recurring task with
+    its template id (or custom task), region(s), cadence and cron
+    expression, suggested variable values, and whether it changes
+    resources.
     Every recommendation is backed by evidence found in the account, names
     a StratoNext gallery template id or a custom task, and cost
     recommendations below {{min_monthly_savings_usd}} USD per month are left
