@@ -1,0 +1,132 @@
+---
+id: aws-deployment-architecture-diagram
+name: Deployment architecture diagram and component report
+description: >
+  Takes the StratoNext deployment graph of one AWS project deployment,
+  renders it as a PNG architecture diagram with AWS icons, and produces a
+  table report of every component in it. Single run, report only.
+cloudProvider: AWS
+category: architecture
+version: 1
+tags: [architecture, diagram, deployment, inventory]
+---
+task:
+  name: Deployment architecture diagram and component report
+  description: >
+    Render the StratoNext deployment graph provided in context as a PNG
+    architecture diagram and produce a table report of its components.
+    Runs once, report only, changes nothing.
+  instructions: |
+    StratoNext passes exactly one project deployment to you in your context,
+    as JSON. Work only from that JSON. Do not call AWS, and do not diagram
+    or report on any other deployment. The fields you need are:
+
+    - `id`, `name`, `description`, `environmentId`, `workspaceId`,
+      `createdAt`: the deployment itself.
+    - `config.region` and `config.stackNames`: the region and the
+      CloudFormation stacks the deployment is made of.
+    - `graph.nodes[]`: one component each, with `id`, `label`, `resourceId`
+      (physical ID or ARN), `serviceName` (CloudFormation resource type,
+      e.g. `AWS::S3::Bucket`) and `providerName`.
+    - `graph.relationships[]`: one directed connection each, with `id`,
+      `sourceNodeId`, `targetNodeId` and `type` (`READS`, `WRITES`,
+      `INVOKES`, `TRIGGERS`, or another value).
+    - `graph.isDiscovering`, `graph.discoveryError`, `graph.lastDiscoveryAt`:
+      the discovery state of the graph.
+
+    1. Check the input.
+       - If there is no deployment JSON in your context, or `graph` is null
+         or has no nodes, stop and report that instead of drawing anything.
+       - If `graph.isDiscovering` is true or `graph.discoveryError` is set,
+         carry on, but put a visible warning in the image title and at the
+         top of the report that the graph may be incomplete.
+       - A relationship whose source or target isn't in `graph.nodes` is
+         still drawn: add a grey "unknown" node for the missing ID, and list
+         the relationship in the report.
+       - Take the AWS account ID from the first ARN in any `resourceId`
+         (the fifth `:`-separated field). If there is none, show "n/a".
+
+    2. Lay out the diagram.
+       - One node per component, using the official AWS icon for its
+         `serviceName` and its `label` as text. Use a generic AWS icon for
+         any type without a specific one; never drop a node.
+       - Group the nodes into clusters by layer, from left to right:
+         Deployment & IAM (IAM roles, policies), Edge & entry (CloudFront,
+         load balancers, API Gateway, Route 53), Compute (ECS, Lambda, EC2,
+         EKS, Step Functions), Messaging (SQS, SNS, EventBridge, Kinesis),
+         Data & storage (S3, RDS, DynamoDB, ElastiCache, EFS), Identity &
+         secrets (Cognito, Secrets Manager, KMS, SSM parameters),
+         Observability (CloudWatch, logs), Other.
+       - Draw each `AWS::EC2::VPC` node as a container, not just an icon: a
+         box labelled `VPC: <label>` holding the VPC icon and every
+         component with a `READS` relationship to that VPC, still grouped by
+         layer inside it. Those `READS` → VPC relationships are shown by
+         the box, so don't also draw them as arrows. Draw every other
+         relationship to the VPC (e.g. `INVOKES`) as a normal arrow.
+       - Draw every other relationship as an arrow from source to target,
+         styled by `type`: READS blue dashed, WRITES red, INVOKES dark grey,
+         TRIGGERS orange bold, any other type grey with the type as its
+         label. Don't put a text label on each arrow; add a legend box
+         explaining the colours instead.
+
+    3. Render the PNG.
+       - Use the Python `diagrams` package (AWS icons, Graphviz underneath),
+         installing it and Graphviz if missing. Lay it out left to right at
+         150 DPI with a white background, generous spacing between nodes
+         and between ranks, and curved (spline) edges.
+       - Title: `<name> deployment - AWS <region> - account <account>` on
+         the first line, and `<N> components, <M> relationships -
+         discovered <lastDiscoveryAt date>, generated <today>` on the
+         second.
+       - Wrap labels longer than about 20 characters onto two lines.
+       - Save it as `deployment-architecture.png`. Open the image and check
+         it before uploading: every node is present, the text is readable,
+         and no node or label overlaps another. Adjust spacing and
+         re-render until it is clean.
+
+    4. Produce the component table report.
+       - One row per node, with columns: Component (`label`), Node ID, AWS
+         type (`serviceName`), Layer, Stack, Resource ID (`resourceId`),
+         Outgoing, Incoming. Outgoing and Incoming list the connected
+         components' labels with the relationship type, e.g.
+         `RDS PostgreSQL Instance (reads)`.
+       - Fill Stack with the entry of `config.stackNames` that appears in
+         the node's `resourceId` (the longest match wins). Leave it blank
+         when none does: don't guess.
+       - Sort rows by layer (in the order from step 2), then AWS type,
+         then component.
+       - Above the table, add a summary: deployment name, ID and
+         description; region; account; environment and workspace IDs; the
+         stack names; component and relationship counts (relationships
+         broken down by type); discovery time and state. Then a table with
+         the number of components per AWS type.
+       - Below the table, list isolated components (no relationships) and
+         relationships that point at unknown nodes, or say "none".
+       - Embed the PNG at the top of the report. Save the report as
+         Markdown (`deployment-components.md`) and the components table as
+         CSV (`deployment-components.csv`).
+
+    Upload `deployment-architecture.png`, `deployment-components.md`, and
+    `deployment-components.csv` as artifacts in the workspace so they can be
+    downloaded.
+
+    This is a one-off, report-only run. Do not modify the deployment or any
+    AWS resource, and do not set up a schedule or recurring run.
+  verificationCriteria: |
+    A PNG diagram was uploaded showing every node of the provided deployment
+    graph with its AWS icon and every relationship (READS to a VPC shown as
+    containment), and the component report lists every node with its AWS
+    type, resource ID, and connections. Component and relationship counts
+    in the image title and the report match the provided graph. Nothing was
+    changed and no schedule was created.
+
+placeholders:
+  environment:
+    label: Environment
+    description: The AWS environment whose project deployment is diagrammed.
+    required: true
+
+  agent:
+    label: Assignee
+    description: Which agent should draw the diagram and write the report.
+    required: true
