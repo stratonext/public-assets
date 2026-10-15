@@ -70,19 +70,33 @@ task:
          explaining the colours instead.
 
     3. Render the PNG.
-       - Use the Python `diagrams` package (AWS icons, Graphviz underneath),
-         installing it and Graphviz if missing. Lay it out left to right at
-         150 DPI with a white background, generous spacing between nodes
-         and between ranks, and curved (spline) edges.
+       - Write the Graphviz DOT yourself and render it with `dot -Tpng`.
+         Use the Python `diagrams` package only as the source of the
+         official AWS icon PNGs (its `resources/aws/` folder); don't use its
+         `Diagram`/node classes, because their fixed-width nodes let long
+         captions spill sideways over neighbouring nodes. If `dot` or
+         `diagrams` is missing, install it (`apt-get install graphviz`,
+         `pip install diagrams`) before starting.
+       - Draw each component as `shape=plain` with an HTML-like label: a
+         two-row borderless table, the icon in a fixed 72x72 cell on top
+         (`<IMG SCALE="TRUE"/>`) and the caption below at 13pt, word-wrapped
+         at about 18 characters per line. The node then sizes itself to
+         its caption, so text is never squeezed or stretched.
+       - Draw each layer and VPC as a `subgraph cluster_*`, rounded and
+         lightly filled, with the title top-left.
+       - Graph settings: `rankdir=LR`, `newrank=true`, `splines=spline`,
+         `nodesep=1.1`, `ranksep=2.2`, `pad=0.8`, `dpi=150`, white
+         background. Edges leave a node on its right and enter on its left
+         (`tailport=e headport=w`) so arrows don't cross icons or captions.
        - Title: `<name> deployment - AWS <region> - account <account>` on
          the first line, and `<N> components, <M> relationships -
          discovered <lastDiscoveryAt date>, generated <today>` on the
          second.
-       - Wrap labels longer than about 20 characters onto two lines.
        - Save it as `deployment-architecture.png`. Open the image and check
-         it before uploading: every node is present, the text is readable,
-         and no node or label overlaps another. Adjust spacing and
-         re-render until it is clean.
+         it before uploading: every node is present, every caption sits
+         fully under its own icon and is readable, and no arrow runs
+         through an icon or caption. If anything is off, increase
+         `nodesep`/`ranksep` and re-render until it is clean.
 
     4. Produce the component table report.
        - One row per node, with columns: Component (`label`), Node ID, AWS
