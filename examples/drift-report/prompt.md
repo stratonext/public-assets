@@ -7,8 +7,7 @@ The agent downloads the project and deployment definitions, compares what
 the deployment defines with what is actually running in the cloud, and
 reports every resource that is missing, unmanaged, or configured
 differently. It runs once, right in the chat, and produces the report as
-Markdown and as PDF (via the agent's Markdown-to-PDF tool). It creates no
-template or task.
+Markdown. It creates no template or task.
 
 ---
 
@@ -100,19 +99,14 @@ Write it in Markdown:
 - `## Resources in sync`: a compact table of resources that match.
 - `## Notes`: resources or services not checked and the permission that
   would allow them.
-- Page breaks in the syntax the Markdown-to-PDF tool supports, so the
-  summary stands alone on page 1.
 
-Convert it to PDF with the Markdown-to-PDF tool, without any separate
-layout, so the PDF and Markdown carry the same content. Open the PDF and
-check that every section is present and tables are readable. Save both as
-`drift-report-<project-slug>-<deployment-slug>-<YYYY-MM-DD>.md` and
-`.pdf`.
+Save it as `drift-report-<project-slug>-<deployment-slug>-<YYYY-MM-DD>.md`.
+Do not produce a PDF.
 
 ## Step 5. Tell me
 
 In the chat, give me the overall status, the counts, and the High findings
-in a few lines, then attach or link both files.
+in a few lines, then attach or link the Markdown report.
 
 Change nothing: no resource, setting, tag, or definition may be created,
 modified, or deleted, even where the report suggests a fix. If I ask you

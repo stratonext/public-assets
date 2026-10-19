@@ -12,7 +12,7 @@ as a task and schedule; others run once, right in the chat.
 - [drift-report](drift-report/prompt.md) (one-time): downloads a
   project's deployment, compares what it defines with what is running in
   the cloud, and reports missing, changed, and unmanaged resources with
-  suggested fixes, as Markdown and PDF.
+  suggested fixes, as a Markdown report.
 - [cost-savings-digest](cost-savings-digest/prompt.md): downloads a
   project's deployment and creates a task template for it that reports the
   deployment's spend over the last 7 days and concrete savings with an
