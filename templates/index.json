@@ -66,7 +66,7 @@
 	{
 		"id": "daily-ops-journal",
 		"name": "Daily ops journal",
-		"description": "Writes a recurring operations journal for one environment of a project: health and incidents, changes and deployments, cost movement, security findings, and open action items, published as a multi-page, newspaper-style PDF edition and a Markdown journal. Report only, changes nothing.",
+		"description": "Writes a recurring operations journal for one environment of a project: health and incidents, changes and deployments, cost movement, security findings, and open action items, written as a newspaper-style Markdown edition and converted to PDF. Report only, changes nothing.",
 		"cloudProvider": "OTHER",
 		"category": "operations",
 		"path": "templates/other/daily-ops-journal.yaml"

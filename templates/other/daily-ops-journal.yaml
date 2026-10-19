@@ -4,9 +4,8 @@ name: Daily ops journal
 description: >
   Writes a recurring operations journal for one environment of a project:
   health and incidents, changes and deployments, cost movement, security
-  findings, and open action items, published as a multi-page,
-  newspaper-style PDF edition and a Markdown journal. Report only, changes
-  nothing.
+  findings, and open action items, written as a newspaper-style Markdown
+  edition and converted to PDF. Report only, changes nothing.
 cloudProvider: OTHER
 category: operations
 version: 1
@@ -17,8 +16,8 @@ task:
   description: >
     Write the ops journal for the selected project's environment, covering
     everything that happened since the previous journal, and publish it as
-    a newspaper-style PDF edition and a Markdown journal. Report only,
-    changes nothing.
+    a newspaper-style Markdown edition and its PDF. Report only, changes
+    nothing.
   instructions: |
     Write the ops journal for the environment selected for this task,
     within the project selected for this task. The journal covers that one
@@ -77,8 +76,8 @@ task:
 
     ## 3. Curate into a newspaper
 
-    The journal is styled as a multi-page newspaper edition, like the Wall
-    Street Journal: a front page with the headlines of the period, then an
+    The journal is laid out as a newspaper edition, like the Wall Street
+    Journal: a front page with the headlines of the period, then an
     inside section for each beat from section 2, then a back page with the
     action items. Pick the front-page content from what you gathered:
     - One **lead**: the single most important ops event of the period, in
@@ -115,7 +114,7 @@ task:
     ## 4. Build the data file
 
     Write a JSON file with this shape. It is the single source both
-    renderings are built from:
+    journal is written from:
 
     ```json
     {
@@ -158,71 +157,53 @@ task:
     Leave out the cost figures, stories, and section when cost tracking is
     off, and the security list and section when security tracking is off.
 
-    ## 5. Render the Markdown
+    ## 5. Write the Markdown edition
 
-    Render the data file to Markdown, in this order: the masthead line
-    `# <project> Ops Daily`, the environment, date, period, overall status
-    and tagline; the lead (section label, headline, dek, byline, body,
-    source); the secondary stories; an at-a-glance table; security (or "No
-    new security findings in this period."); an action items table; the
-    briefs; one `##` section per beat from `sections`; and the notes. The
-    Markdown and the PDF carry the same content.
+    Render the data file to one Markdown document laid out as a newspaper
+    edition. Write it so it reads well both as Markdown and once converted
+    to PDF:
 
-    ## 6. Render the PDF edition
+    **Front page:**
+    - `# <project> Ops Daily` as the masthead, then the tagline (naming the
+      environment) in italics.
+    - A dateline line: the date, the period, and `Status: <Green | Amber |
+      Red>` in bold, separated by ` | `, between two horizontal rules.
+    - The lead: the section label in uppercase bold (for example
+      `**INCIDENT**`), the headline as `##`, the dek in italics, the byline,
+      the body, and the source line in italics.
+    - An "At a glance" table of the key figures, and the open action items
+      as a short table.
+    - The secondary stories and security, each story as a `###` headline,
+      its body, and its source line in italics. A front-page story that
+      has more inside ends with "Continued in <section>".
+    - An "Inside" list naming the sections that follow.
 
-    Render the same data as HTML and print it to PDF (for example with
-    headless Chromium or WeasyPrint), on US Letter pages with 0.5 inch
-    margins, in a Wall Street Journal style. Pages are numbered like a
-    newspaper section: A1, A2, A3, and so on.
+    **Inside sections**, in this order: Health, Incidents, Changes, Cost,
+    Security, Backups and capacity. Each is a `##` heading with its stories
+    as `###` headlines; lists of items are tables. Front-page stories are
+    repeated in full in their section.
 
-    **Page A1, the front page:**
-    - **Masthead**: `<project> Ops Daily` centered in a large, bold serif
-      (Georgia or Times New Roman), with the tagline (naming the
-      environment) in small caps under it. Below it, a dateline bar between
-      thin double rules: the date on the left, the period in the middle,
-      and the overall status on the right, in green, amber, or red.
-    - **Body**: black serif text on white with no other colors, in columns
-      separated by thin vertical rules. The lead runs across the two left
-      columns with an uppercase section label, a large bold headline, an
-      italic dek, a small-caps byline, and the body; the right column holds
-      the at-a-glance box and the open action items. Secondary stories and
-      security follow in columns below.
-    - **Inside box**: a small "Inside" index listing each beat section and
-      the back page with their page numbers, for example "Changes ... A3".
-    - A front-page story that has more on an inside page ends with
-      "Continued on A<n>".
-    - The front page must fit on page A1. If it does not, move content
-      inside instead of cutting it: the briefs go to the back page, then
-      secondary stories beyond the first go to their beat's section, then
-      shorten the front-page bodies. Never move the lead, the at-a-glance
-      box, security, or the open action items.
+    **Back page:** a `## Action items` table (Item, Owner, Opened on,
+    Status), then `## Briefs` as one-line bullets, then `## Notes`.
 
-    **Inside pages, one section per beat:**
-    - Sections run in this order: Health, Incidents, Changes, Cost,
-      Security, Backups and capacity. Each starts under a section banner
-      with its name in large small caps; consecutive short sections may
-      share a page.
-    - Stories run in two or three columns separated by thin rules. Lists of
-      items are tables whose header row repeats when a table breaks across
-      pages.
-    - Never leave a section banner or a headline at the bottom of a page
-      apart from the start of its story.
-
-    **Back page:**
-    - The full action items table (Item, Owner, Opened on, Status), the
-      briefs, and the notes, starting on a new page.
-
-    **On every page:**
-    - Each story ends with its `source` line in small italic type.
+    **Throughout:**
+    - Each story ends with its source line in italics.
     - Empty sections print a single honest line instead of disappearing,
       for example "No incidents in this period.", "No new security
       findings in this period.", or "No open action items."
-    - Every page after A1 has a running header with `<project> Ops Daily`,
-      the environment, and the date, and every page has its page number in
-      the footer.
+    - Start the inside sections and the back page on a new page using the
+      page-break syntax your Markdown-to-PDF tool supports, so the front
+      page stands alone on page 1.
 
-    Check the PDF before publishing: page A1 holds only the front page,
-    every beat section is present, and the back page comes last.
+    ## 6. Convert to PDF
+
+    Convert the Markdown edition to PDF with your Markdown-to-PDF tool. Do
+    not write a separate HTML or PDF layout: the PDF must be the converted
+    Markdown, so the two always carry the same content. If the tool takes
+    styling options, use a serif font, black text on white, and page
+    numbers in the footer. Open the result and check that every section
+    is present and that tables are readable; fix the Markdown and convert
+    again if not.
 
     ## 7. Publish
 
@@ -232,7 +213,7 @@ task:
     - `ops-journal-<project-slug>-<environment-slug>-<YYYY-MM-DD>.md`, the
       Markdown journal.
     - `ops-journal-<project-slug>-<environment-slug>-<YYYY-MM-DD>.pdf`, the
-      PDF edition.
+      same edition converted to PDF.
     - `ops-journal-<project-slug>-<environment-slug>-<YYYY-MM-DD>.json`,
       the data file; the next run reads its `period` and `action_items` to
       continue from.
@@ -246,12 +227,12 @@ task:
     covering only the selected environment. The journal states its
     reporting period, starting where the previous journal for this
     environment ended (or covering the last {{first_run_lookback_days}}
-    days on the first run). The PDF is a multi-page newspaper edition: a
-    front page (A1) with a masthead, a dateline with the overall status, a
-    lead story, the at-a-glance box, security, open action items, and an
-    index of the inside pages; an inside section for each beat; and a back
-    page with the full action items, briefs, and notes, with page numbers
-    on every page. The Markdown carries the same content. Every story
+    days on the first run). The Markdown is laid out as a newspaper
+    edition: a front page with a masthead, a dateline with the overall
+    status, a lead story, the at-a-glance table, security, open action
+    items, and an inside list; an inside section for each beat; and a back
+    page with the full action items, briefs, and notes. The PDF is that
+    Markdown converted with the agent's Markdown-to-PDF tool. Every story
     carries evidence in its source line, empty sections say so instead of
     being padded, and every open action item from the previous journal
     appears again as resolved or still open. No resource, alarm, or
