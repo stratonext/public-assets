@@ -21,8 +21,7 @@ task:
   instructions: |
     Write the ops journal for the environment selected for this task,
     within the project selected for this task. The journal covers that one
-    environment only. Use {{timezone}} for every date and time in the
-    journal.
+    environment only. Give every date and time in the journal in UTC.
 
     ## 1. Reporting period
 
@@ -118,7 +117,7 @@ task:
       "environment": "<environment name>",
       "date": "October 15, 2026",
       "date_slug": "2026-10-15",
-      "period": "Oct 14, 2026 09:00 - Oct 15, 2026 09:00 <timezone> (last 24 hours)",
+      "period": "Oct 14, 2026 09:00 - Oct 15, 2026 09:00 UTC (last 24 hours)",
       "status": "Green | Amber | Red",
       "tagline": "Operations Journal - <environment name>",
       "lead": {
@@ -247,15 +246,6 @@ placeholders:
     required: true
 
   variables:
-    - key: timezone
-      label: Time zone
-      description: >
-        IANA time zone used for every date and time in the journal, for
-        example Europe/Rome or America/New_York.
-      type: string
-      default: UTC
-      required: true
-
     - key: include_cost
       label: Include cost
       description: Add a cost section with the last 24 hours of spend.
