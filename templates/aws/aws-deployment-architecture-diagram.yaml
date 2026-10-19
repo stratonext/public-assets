@@ -121,18 +121,20 @@ task:
          CSV (`deployment-components.csv`).
 
     Upload `deployment-architecture.png`, `deployment-components.md`, and
-    `deployment-components.csv` as artifacts in the workspace so they can be
-    downloaded.
+    `deployment-components.csv` as attachments on this task (the task run
+    you are executing), so they can be downloaded from it. Do not upload
+    them to the project or workspace.
 
     This is a one-off, report-only run. Do not modify the deployment or any
     AWS resource, and do not set up a schedule or recurring run.
   verificationCriteria: |
-    A PNG diagram was uploaded showing every node of the provided deployment
+    A PNG diagram was attached to this task showing every node of the provided deployment
     graph with its AWS icon and every relationship (READS to a VPC shown as
     containment), and the component report lists every node with its AWS
     type, resource ID, and connections. Component and relationship counts
-    in the image title and the report match the provided graph. Nothing was
-    changed and no schedule was created.
+    in the image title and the report match the provided graph. All three
+    files are attached to the task, not the project. Nothing was changed
+    and no schedule was created.
 
 placeholders:
   environment:
