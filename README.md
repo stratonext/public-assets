@@ -12,7 +12,7 @@ Public assets created and shared by StratoNext, Inc. — [https://www.stratonext
 ### `examples/`
 
 - [daily-ops-journal](examples/daily-ops-journal/prompt.md) — A prompt that has an agent with the StratoNext skill download a project deployment and create a tailored template for a daily ops journal, published as Markdown and PDF.
-- [drift-report](examples/drift-report/prompt.md) — A prompt that creates a tailored template reporting where a deployment's running resources no longer match its definition.
+- [drift-report](examples/drift-report/prompt.md) — A one-time prompt that reports where a deployment's running resources no longer match its definition.
 - [cost-savings-digest](examples/cost-savings-digest/prompt.md) — A prompt that creates a tailored template reporting a deployment's last 7 days of spend and concrete savings.
 
 ## License
