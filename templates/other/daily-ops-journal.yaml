@@ -4,7 +4,7 @@ name: Daily ops journal
 description: >
   Writes a daily operations journal for one environment of a project
   covering the last 24 hours: health and incidents, changes and
-  deployments, cost movement, security findings, and action items, written
+  deployments, spend, security findings, and action items, written
   as a newspaper-style Markdown edition and converted to PDF. Report only,
   changes nothing.
 cloudProvider: OTHER
@@ -21,16 +21,14 @@ task:
   instructions: |
     Write the ops journal for the environment selected for this task,
     within the project selected for this task. The journal covers that one
-    environment only. This task runs on a schedule; each run produces one
-    journal entry. Use {{timezone}} for every date and time in the journal.
+    environment only. Use {{timezone}} for every date and time in the
+    journal.
 
     ## 1. Reporting period
 
-    The journal covers exactly the last 24 hours, ending when this run
-    starts. State the exact start and end of that window at the top of the
-    journal. Every figure, event, and finding in the journal must fall in
-    that window; the only exception is the prior-24-hour spend used as the
-    baseline for the cost comparison.
+    The journal covers exactly the last 24 hours, ending now. State the
+    exact start and end of that window at the top of the journal. Every
+    figure, event, and finding in the journal must fall in that window.
 
     The journal stands on its own. Do not read, compare with, or mention
     earlier journals or reports.
@@ -57,11 +55,9 @@ task:
        whether they succeeded; resources created or deleted. Call out any
        change made outside the usual automation (console or manual CLI).
 
-    d) **Cost**: spend in the last 24 hours and the change versus the 24
-       hours before them, taken from the provider's billing data; the top 5
-       services by spend; any service whose spend grew by more than
-       {{cost_anomaly_threshold_percent}}% versus those prior 24 hours.
-       Include this section only when cost tracking is turned on:
+    d) **Cost**: total spend in the last 24 hours and the top 5 services
+       by spend, taken from the provider's billing data. If the billing
+       data for the window is not complete yet, say so. Include this section only when cost tracking is turned on:
        {{include_cost}}.
 
     e) **Security**: new findings of {{min_security_severity}} severity or
@@ -81,8 +77,8 @@ task:
     action items. Pick the front-page content from what you gathered:
     - One **lead**: the single most important ops event of the period, in
       this order of priority: an unresolved incident, a critical security
-      finding, a resolved incident, a failed or risky change, a cost
-      anomaly, a failed backup. If nothing qualifies, the lead is an
+      finding, a resolved incident, a failed or risky change, a failed
+      backup. If nothing qualifies, the lead is an
       "all clear" story stating that the environment ran without
       incidents, with the period's notable figures.
     - One to three **secondary** stories: the next most important events.
@@ -94,7 +90,7 @@ task:
       a failed backup to rerun.
     - Optionally a handful of one-line **briefs**: minor items worth a
       mention but not a full story (a routine deployment, a closed alarm, a
-      small cost movement).
+      noteworthy spend item).
 
     Then write the inside sections: stories for each beat (health,
     incidents, changes, cost, security, backups and capacity). Front-page
@@ -108,8 +104,8 @@ task:
     filler. An empty section is a valid, honest result.
 
     Set the overall status: Red means an unresolved incident or a critical
-    security finding; Amber means a resolved incident, a firing alarm, a
-    cost anomaly, or a failed backup; Green means none of these.
+    security finding; Amber means a resolved incident, a firing alarm, or
+    a failed backup; Green means none of these.
 
     ## 4. Build the data file
 
@@ -126,7 +122,7 @@ task:
       "status": "Green | Amber | Red",
       "tagline": "Operations Journal - <environment name>",
       "lead": {
-        "section": "INCIDENT | SECURITY | CHANGES | COST | BACKUPS | ALL CLEAR",
+        "section": "INCIDENT | SECURITY | CHANGES | BACKUPS | ALL CLEAR",
         "headline": "...",
         "dek": "one-line subhead",
         "byline": "Compiled from <data sources, e.g. CloudWatch, CloudTrail>",
@@ -136,7 +132,7 @@ task:
       "secondary": [ {"headline": "...", "body": "...", "source": "..."} ],
       "at_a_glance": {
         "alarms": 0, "incidents": 0, "changes": 0, "manual_changes": 0,
-        "spend": "USD ...", "spend_change": "+4%",
+        "spend": "USD ...",
         "new_security_findings": 0, "failed_backups": 0
       },
       "security": [ {"headline": "...", "body": "...", "source": "..."} ],
@@ -250,16 +246,6 @@ placeholders:
     description: Which agent should write the journal.
     required: true
 
-  schedule:
-    label: Run every
-    description: >
-      How often to write a journal, in days. Each journal covers the 24
-      hours before it runs.
-    required: true
-    defaultIntervalDays: 1
-    minIntervalDays: 1
-    maxIntervalDays: 30
-
   variables:
     - key: timezone
       label: Time zone
@@ -272,18 +258,9 @@ placeholders:
 
     - key: include_cost
       label: Include cost
-      description: Add a cost section with spend changes and anomalies.
+      description: Add a cost section with the last 24 hours of spend.
       type: boolean
       default: true
-      required: true
-
-    - key: cost_anomaly_threshold_percent
-      label: Cost anomaly threshold (%)
-      description: >
-        Minimum period-over-period spend growth, as a percentage, to flag a
-        service as a cost anomaly.
-      type: number
-      default: 20
       required: true
 
     - key: include_security

@@ -44,13 +44,8 @@ the user's own workspace rather than typed in:
   `environment` picker only offers that project's environments.
 - `environment`: a picker of the user's environments; one per task.
 - `agent`: which agent runs the task.
-- `schedule`: makes the created task recurring, asking the user to run it
-  every N days. Set `defaultIntervalDays`, and optionally `minIntervalDays`
-  and `maxIntervalDays`. State in the instructions which window each run
-  covers (for example "the last 24 hours"), since the interval only sets
-  how often it runs.
 
-`other/daily-ops-journal.yaml` uses all four.
+`other/daily-ops-journal.yaml` uses all three.
 
 ## Variable types
 

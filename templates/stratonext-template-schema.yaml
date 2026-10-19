@@ -78,13 +78,11 @@ properties:
       user's own real workspace resources (a picker, not free text);
       `project` is a picker of the user's projects, and when it is set the
       `environment` picker only offers that project's environments;
-      `schedule` makes the created task recurring; `variables` are plain
-      values substituted into the `task` fields above.
+      `variables` are plain values substituted into the `task` fields above.
     properties:
       project: { $ref: "#/$defs/placeholder" }
       environment: { $ref: "#/$defs/placeholder" }
       agent: { $ref: "#/$defs/placeholder" }
-      schedule: { $ref: "#/$defs/schedulePlaceholder" }
       variables:
         type: array
         items: { $ref: "#/$defs/variable" }
@@ -98,30 +96,6 @@ $defs:
       label: { type: string, minLength: 1 }
       description: { type: string }
       required: { type: boolean }
-
-  schedulePlaceholder:
-    type: object
-    required: [label]
-    additionalProperties: false
-    description: >-
-      Asks the user how often the created task should run, as an interval
-      in days. The task runs once per interval, starting from import.
-    properties:
-      label: { type: string, minLength: 1 }
-      description: { type: string }
-      required: { type: boolean }
-      defaultIntervalDays:
-        type: integer
-        minimum: 1
-        description: Interval the picker starts on.
-      minIntervalDays:
-        type: integer
-        minimum: 1
-        description: Smallest interval the user may choose.
-      maxIntervalDays:
-        type: integer
-        minimum: 1
-        description: Largest interval the user may choose.
 
   variable:
     type: object
