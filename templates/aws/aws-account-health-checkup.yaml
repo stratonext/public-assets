@@ -39,9 +39,14 @@ task:
     whatever the service scope. Keep track of exactly which services you
     checked and which you skipped; the report must end by listing them.
 
+    Out of scope: do not check or call the APIs of IAM, GuardDuty, Security
+    Hub, IAM Access Analyzer, AWS Config, or AWS Organizations, and do not
+    report on whether they are enabled. Leave them out of the report
+    entirely; they are not "skipped" services.
+
     Missing permissions: if an API call is denied (AccessDenied,
     UnauthorizedOperation, or a similar error), or a service such as Cost
-    Explorer, Security Hub, or GuardDuty cannot be read, do not stop and do
+    Explorer or CloudTrail cannot be read, do not stop and do
     not fail the task. Note the service or check, the denied API action
     (for example `ce:GetCostAndUsage`), and the region, then keep going
     with the services and checks you can access. Never try to work around
@@ -59,13 +64,12 @@ task:
       Explorer, the projected monthly spend, and the change versus the
       previous period of the same length.
     - The top 10 services and the top regions by spend.
-    - Whether the account is an AWS Organizations management (payer)
-      account or a linked account, and whether any AWS credits are applied.
+    - Whether any AWS credits are applied, from the Cost Explorer
+      discounts breakdown.
     - An inventory of what is in use: EC2, EBS, RDS, Lambda, ECS/EKS, S3,
       load balancers, NAT gateways, Elastic IPs, and any other service with
       meaningful spend.
-    - Which security services are enabled: Security Hub, GuardDuty, IAM
-      Access Analyzer, AWS Config, and CloudTrail (multi-region or not).
+    - Whether CloudTrail is enabled, and whether it is multi-region.
 
     ## 2. Cost optimization
 
@@ -99,19 +103,13 @@ task:
 
     ## 4. High-severity security findings
 
-    Report only findings of HIGH or CRITICAL severity, or their equivalent:
-    - Active HIGH/CRITICAL findings from Security Hub, GuardDuty, and IAM
-      Access Analyzer, where those services are enabled.
-    - Root user without MFA, or with access keys.
-    - IAM users with console access but no MFA, and access keys older than
-      90 days or unused for 90 days.
+    Check the resources directly and report only issues of HIGH or
+    CRITICAL severity, or their equivalent:
     - Security groups that allow 0.0.0.0/0 or ::/0 on SSH (22), RDP (3389),
       or database ports.
     - Publicly accessible S3 buckets, RDS instances, or EBS/RDS snapshots.
     - CloudTrail not enabled in every region, and unencrypted EBS volumes
       or RDS instances holding data.
-    If Security Hub or GuardDuty is not enabled, say so as a finding in its
-    own right instead of skipping the section.
 
     ## 5. Recommendations: how to use StratoNext
 
@@ -125,7 +123,7 @@ task:
 
     Gallery templates you can recommend:
     - `aws-cost-and-credits-coverage`: spend vs. applied credits, for
-      management accounts or accounts with credits.
+      accounts with credits applied.
     - `aws-region-cost-distribution-report`: spend by region and
       fast-growing regions.
     - `aws-ec2-rightsizing-report`: idle and underutilized EC2 instances.
