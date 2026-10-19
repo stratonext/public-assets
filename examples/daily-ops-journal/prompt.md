@@ -70,10 +70,13 @@ Write a template with:
   and `journal`.
 - `placeholders.environment`: the environment the deployment runs in,
   required. `placeholders.agent`: the assignee, required.
-- Variables only for what a user would reasonably change: whether to
-  include the cost section (boolean, default true), whether to include the
-  security section (boolean, default true), and the minimum security
-  severity to report (string, default HIGH). Everything that comes from the
+- Exactly these variables, for what a user would reasonably change:
+  `include_cost`, whether to include the cost section (boolean, default
+  true); `include_security`, whether to include the security section
+  (boolean, default true); and `min_security_severity`, the minimum
+  security severity to report (string, default HIGH). Use them in the
+  instructions as `{{include_cost}}`, `{{include_security}}`, and
+  `{{min_security_severity}}`. Everything that comes from the
   deployment is written into the instructions, not asked for.
 
 The task `instructions` must tell the agent that runs it to do all of the
