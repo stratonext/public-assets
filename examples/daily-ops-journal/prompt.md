@@ -35,13 +35,16 @@ Use the StratoNext skill to download:
   groups), how it is backed up, and any tags it uses to mark its
   resources.
 
-If the project or deployment cannot be found, or the skill has no way to
-download one of them, stop and tell me what is missing. Do not guess or
-invent resources.
+If the project or the deployment itself cannot be found, stop and tell me.
+If you can find them but lack permission to read some of their details or
+services (for example monitoring, billing, or security services), do not
+stop: keep going with what you can read, and keep a list of what you
+could not read and which permission was missing. Do not guess or invent
+resources to fill the gaps.
 
 Show me a short summary of what you found (environment, provider, regions,
-the main resources by type, monitoring, pipelines, backups) and wait for
-me to confirm before going on.
+the main resources by type, monitoring, pipelines, backups), plus the list
+of what you could not read, and wait for me to confirm before going on.
 
 ## Step 2. Read the template format
 
@@ -105,8 +108,15 @@ defines no backups).
      resources.
    - Backups and capacity: its backup jobs that failed or did not run;
      its quotas, disks, or databases above 80% of capacity.
-   If a data source is unavailable, say so in the journal's notes instead
-   of skipping it.
+   Missing permissions never stop the journal. If a service or data
+   source cannot be read (access denied, missing permission, service not
+   enabled), keep going with the services that are available and still
+   publish the journal. List every source that could not be read, with
+   the error or missing permission, in the journal's notes, and print
+   "Not available: <reason>" in the affected section instead of leaving
+   it empty or guessing. Only the sources you could read count toward the
+   overall status; say in the notes that the status excludes the
+   unavailable ones.
 
 3. **Curate** it into a newspaper edition in the style of the Wall Street
    Journal:
@@ -156,13 +166,18 @@ Also write `verificationCriteria` that checks: both artifacts exist with
 the same content; the window is the last 24 hours in UTC and nothing falls
 outside it; there is no reference to earlier journals; the front page,
 inside sections, and back page are present; every story has a source
-line; and nothing was changed.
+line; every source that could not be read is listed in the notes with its
+reason; and nothing was changed. A journal built from only some services
+because of missing permissions still passes.
 
 ## Step 4. Validate and create
 
 Validate the template against the schema and fix any error. Check that
 every resource, alarm, pipeline, and region named in the instructions
-comes from what you downloaded in step 1.
+comes from what you downloaded in step 1. Parts of the deployment you
+could not read in step 1 still get their beat in the instructions,
+described generically, so the journal covers them once permissions are
+granted.
 
 Then show me the full template YAML and, once I approve it, create it in
 my StratoNext workspace with the StratoNext skill. Tell me its id and that
