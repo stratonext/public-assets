@@ -46,59 +46,27 @@ task:
        - Take the AWS account ID from the first ARN in any `resourceId`
          (the fifth `:`-separated field). If there is none, show "n/a".
 
-    2. Lay out the diagram.
-       - One node per component, using the official AWS icon for its
-         `serviceName` and its `label` as text. Use a generic AWS icon for
-         any type without a specific one; never drop a node.
-       - Group the nodes into clusters by layer, from left to right:
-         Deployment & IAM (IAM roles, policies), Edge & entry (CloudFront,
-         load balancers, API Gateway, Route 53), Compute (ECS, Lambda, EC2,
-         EKS, Step Functions), Messaging (SQS, SNS, EventBridge, Kinesis),
-         Data & storage (S3, RDS, DynamoDB, ElastiCache, EFS), Identity &
-         secrets (Cognito, Secrets Manager, KMS, SSM parameters),
-         Observability (CloudWatch, logs), Other.
-       - Draw each `AWS::EC2::VPC` node as a container, not just an icon: a
-         box labelled `VPC: <label>` holding the VPC icon and every
-         component with a `READS` relationship to that VPC, still grouped by
-         layer inside it. Those `READS` → VPC relationships are shown by
-         the box, so don't also draw them as arrows. Draw every other
-         relationship to the VPC (e.g. `INVOKES`) as a normal arrow.
-       - Draw every other relationship as an arrow from source to target,
-         styled by `type`: READS blue dashed, WRITES red, INVOKES dark grey,
-         TRIGGERS orange bold, any other type grey with the type as its
-         label. Don't put a text label on each arrow; add a legend box
-         explaining the colours instead.
+    2. Draw the diagram with your diagramming tool and export it as
+       `deployment-architecture.png`. It must show:
+       - One node per component, with the AWS icon for its `serviceName`
+         and its `label` as the caption. Never drop a node.
+       - Nodes grouped by layer, left to right: Deployment & IAM, Edge &
+         entry, Compute, Messaging, Data & storage, Identity & secrets,
+         Observability, Other.
+       - Each `AWS::EC2::VPC` as a container labelled `VPC: <label>`,
+         holding every component that has a `READS` relationship to it.
+         Those `READS` → VPC relationships are shown by the container, not
+         as arrows.
+       - Every other relationship as an arrow from source to target,
+         distinguished by `type` (READS, WRITES, INVOKES, TRIGGERS, other),
+         with a legend.
+       - Title: `<name> deployment - AWS <region> - account <account>`, and
+         `<N> components, <M> relationships - discovered <lastDiscoveryAt
+         date>, generated <today>`.
+       Check the exported image before attaching it: every node is present
+       and every caption is readable.
 
-    3. Render the PNG.
-       - Write the Graphviz DOT yourself and render it with `dot -Tpng`.
-         Use the Python `diagrams` package only as the source of the
-         official AWS icon PNGs (its `resources/aws/` folder); don't use its
-         `Diagram`/node classes, because their fixed-width nodes let long
-         captions spill sideways over neighbouring nodes. If `dot` or
-         `diagrams` is missing, install it (`apt-get install graphviz`,
-         `pip install diagrams`) before starting.
-       - Draw each component as `shape=plain` with an HTML-like label: a
-         two-row borderless table, the icon in a fixed 72x72 cell on top
-         (`<IMG SCALE="TRUE"/>`) and the caption below at 13pt, word-wrapped
-         at about 18 characters per line. The node then sizes itself to
-         its caption, so text is never squeezed or stretched.
-       - Draw each layer and VPC as a `subgraph cluster_*`, rounded and
-         lightly filled, with the title top-left.
-       - Graph settings: `rankdir=LR`, `newrank=true`, `splines=spline`,
-         `nodesep=1.1`, `ranksep=2.2`, `pad=0.8`, `dpi=150`, white
-         background. Edges leave a node on its right and enter on its left
-         (`tailport=e headport=w`) so arrows don't cross icons or captions.
-       - Title: `<name> deployment - AWS <region> - account <account>` on
-         the first line, and `<N> components, <M> relationships -
-         discovered <lastDiscoveryAt date>, generated <today>` on the
-         second.
-       - Save it as `deployment-architecture.png`. Open the image and check
-         it before uploading: every node is present, every caption sits
-         fully under its own icon and is readable, and no arrow runs
-         through an icon or caption. If anything is off, increase
-         `nodesep`/`ranksep` and re-render until it is clean.
-
-    4. Produce the component table report.
+    3. Produce the component table report.
        - One row per node, with columns: Component (`label`), Node ID, AWS
          type (`serviceName`), Layer, Stack, Resource ID (`resourceId`),
          Outgoing, Incoming. Outgoing and Incoming list the connected
