@@ -35,18 +35,6 @@ placeholders:
 ```
 
 
-## Placeholders
-
-Besides `variables`, `placeholders` can ask for these, each resolved against
-the user's own workspace rather than typed in:
-
-- `project`: a picker of the user's projects. When it is set, the
-  `environment` picker only offers that project's environments.
-- `environment`: a picker of the user's environments; one per task.
-- `agent`: which agent runs the task.
-
-`other/daily-ops-journal.yaml` uses all three.
-
 ## Variable types
 
 A `placeholders.variables[]` entry's `type` is usually `string`, `number`, or

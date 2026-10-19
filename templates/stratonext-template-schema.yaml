@@ -76,11 +76,8 @@ properties:
       What the customize step asks the user to fill in before creating the
       task template. `environment` and `agent` are resolved against the
       user's own real workspace resources (a picker, not free text);
-      `project` is a picker of the user's projects, and when it is set the
-      `environment` picker only offers that project's environments;
       `variables` are plain values substituted into the `task` fields above.
     properties:
-      project: { $ref: "#/$defs/placeholder" }
       environment: { $ref: "#/$defs/placeholder" }
       agent: { $ref: "#/$defs/placeholder" }
       variables:
