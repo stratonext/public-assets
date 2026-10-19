@@ -1,0 +1,116 @@
+---
+id: aws-deployment-architecture-diagram
+name: Deployment architecture diagram and component report
+description: >
+  Takes the StratoNext deployment graph of one AWS project deployment,
+  renders it as a PNG architecture diagram with AWS icons, and produces a
+  table report of every component in it. Single run, report only.
+cloudProvider: AWS
+category: architecture
+version: 1
+tags: [architecture, diagram, deployment, inventory]
+---
+task:
+  name: Deployment architecture diagram and component report
+  description: >
+    Render the StratoNext deployment graph provided in context as a PNG
+    architecture diagram and produce a table report of its components.
+    Runs once, report only, changes nothing.
+  instructions: |
+    StratoNext passes exactly one project deployment to you in your context,
+    as JSON. Work only from that JSON. Do not call AWS, and do not diagram
+    or report on any other deployment. The fields you need are:
+
+    - `id`, `name`, `description`, `environmentId`, `workspaceId`,
+      `createdAt`: the deployment itself.
+    - `config.region` and `config.stackNames`: the region and the
+      CloudFormation stacks the deployment is made of.
+    - `graph.nodes[]`: one component each, with `id`, `label`, `resourceId`
+      (physical ID or ARN), `serviceName` (CloudFormation resource type,
+      e.g. `AWS::S3::Bucket`) and `providerName`.
+    - `graph.relationships[]`: one directed connection each, with `id`,
+      `sourceNodeId`, `targetNodeId` and `type` (`READS`, `WRITES`,
+      `INVOKES`, `TRIGGERS`, or another value).
+    - `graph.isDiscovering`, `graph.discoveryError`, `graph.lastDiscoveryAt`:
+      the discovery state of the graph.
+
+    1. Check the input.
+       - If there is no deployment JSON in your context, or `graph` is null
+         or has no nodes, stop and report that instead of drawing anything.
+       - If `graph.isDiscovering` is true or `graph.discoveryError` is set,
+         carry on, but put a visible warning in the image title and at the
+         top of the report that the graph may be incomplete.
+       - A relationship whose source or target isn't in `graph.nodes` is
+         still drawn: add a grey "unknown" node for the missing ID, and list
+         the relationship in the report.
+       - Take the AWS account ID from the first ARN in any `resourceId`
+         (the fifth `:`-separated field). If there is none, show "n/a".
+
+    2. Draw the diagram with your diagramming tool and export it as
+       `deployment-architecture.png`. It must show:
+       - One node per component, with the AWS icon for its `serviceName`
+         and its `label` as the caption. Never drop a node.
+       - Nodes grouped by layer, left to right: Deployment & IAM, Edge &
+         entry, Compute, Messaging, Data & storage, Identity & secrets,
+         Observability, Other.
+       - Each `AWS::EC2::VPC` as a container labelled `VPC: <label>`,
+         holding every component that has a `READS` relationship to it.
+         Those `READS` → VPC relationships are shown by the container, not
+         as arrows.
+       - Every other relationship as an arrow from source to target,
+         distinguished by `type` (READS, WRITES, INVOKES, TRIGGERS, other),
+         with a legend.
+       - Title: `<name> deployment - AWS <region> - account <account>`, and
+         `<N> components, <M> relationships - discovered <lastDiscoveryAt
+         date>, generated <today>`.
+       Check the exported image before attaching it: every node is present
+       and every caption is readable.
+
+    3. Produce the component table report.
+       - One row per node, with columns: Component (`label`), Node ID, AWS
+         type (`serviceName`), Layer, Stack, Resource ID (`resourceId`),
+         Outgoing, Incoming. Outgoing and Incoming list the connected
+         components' labels with the relationship type, e.g.
+         `RDS PostgreSQL Instance (reads)`.
+       - Fill Stack with the entry of `config.stackNames` that appears in
+         the node's `resourceId` (the longest match wins). Leave it blank
+         when none does: don't guess.
+       - Sort rows by layer (in the order from step 2), then AWS type,
+         then component.
+       - Above the table, add a summary: deployment name, ID and
+         description; region; account; environment and workspace IDs; the
+         stack names; component and relationship counts (relationships
+         broken down by type); discovery time and state. Then a table with
+         the number of components per AWS type.
+       - Below the table, list isolated components (no relationships) and
+         relationships that point at unknown nodes, or say "none".
+       - Embed the PNG at the top of the report. Save the report as
+         Markdown (`deployment-components.md`) and the components table as
+         CSV (`deployment-components.csv`).
+
+    Upload `deployment-architecture.png`, `deployment-components.md`, and
+    `deployment-components.csv` as attachments on this task (the task run
+    you are executing), so they can be downloaded from it. Do not upload
+    them to the project or workspace.
+
+    This is a one-off, report-only run. Do not modify the deployment or any
+    AWS resource, and do not set up a schedule or recurring run.
+  verificationCriteria: |
+    A PNG diagram was attached to this task showing every node of the
+    provided deployment graph with its AWS icon and every relationship
+    (READS to a VPC shown as containment), and the component report lists
+    every node with its AWS type, resource ID, and connections. Component and relationship counts
+    in the image title and the report match the provided graph. All three
+    files are attached to the task, not the project. Nothing was changed
+    and no schedule was created.
+
+placeholders:
+  environment:
+    label: Environment
+    description: The AWS environment whose project deployment is diagrammed.
+    required: true
+
+  agent:
+    label: Assignee
+    description: Which agent should draw the diagram and write the report.
+    required: true

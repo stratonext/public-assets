@@ -62,5 +62,13 @@
 		"cloudProvider": "AWS",
 		"category": "region-usage",
 		"path": "templates/aws/aws-region-cost-distribution-report.yaml"
+	},
+	{
+		"id": "aws-deployment-architecture-diagram",
+		"name": "Deployment architecture diagram and component report",
+		"description": "Takes the StratoNext deployment graph of one AWS project deployment, renders it as a PNG architecture diagram with AWS icons, and produces a table report of every component in it. Single run, report only.",
+		"cloudProvider": "AWS",
+		"category": "architecture",
+		"path": "templates/aws/aws-deployment-architecture-diagram.yaml"
 	}
 ]
