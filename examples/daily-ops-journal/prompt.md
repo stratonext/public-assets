@@ -179,7 +179,23 @@ could not read in step 1 still get their beat in the instructions,
 described generically, so the journal covers them once permissions are
 granted.
 
-Then show me the full template YAML and, once I approve it, create it in
-my StratoNext workspace with the StratoNext skill. Tell me its id and that
-I can now create a task from it and schedule that task to run daily.
+Then, instead of showing me the YAML, give me a short, plain-language
+recap of the template you are about to create:
+- **Name** and what it does, in one sentence.
+- **Covers**: the project, deployment, environment, cloud provider, and
+  regions.
+- **What the journal will report on**: one line per section (for example
+  "Health: 12 alarms on the checkout API and its database"), naming the
+  main resources, alarms, pipelines, and backups each one watches.
+- **Not covered yet**: anything you could not read because of missing
+  permissions, and the permission that would add it.
+- **Options I can set** when creating a task from it, with their
+  defaults (cost section, security section, minimum security severity).
+- **Output**: the PDF and Markdown file names, and that the journal
+  covers the last 24 hours in UTC and changes nothing.
+
+Keep it short enough to read at a glance. Show the YAML only if I ask for
+it. Once I approve the recap, create the template in my StratoNext
+workspace with the StratoNext skill. Tell me its name and that I can now
+create a task from it and schedule that task to run daily.
 ```
