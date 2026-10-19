@@ -39,6 +39,18 @@ task:
     whatever the service scope. Keep track of exactly which services you
     checked and which you skipped; the report must end by listing them.
 
+    Missing permissions: if an API call is denied (AccessDenied,
+    UnauthorizedOperation, or a similar error), or a service such as Cost
+    Explorer, Security Hub, or GuardDuty cannot be read, do not stop and do
+    not fail the task. Note the service or check, the denied API action
+    (for example `ce:GetCostAndUsage`), and the region, then keep going
+    with the services and checks you can access. Never try to work around
+    a denial by changing IAM policies, assuming other roles, or enabling
+    services. If Cost Explorer itself is denied, rank the most used
+    services by resource counts from the inventory instead and say so in
+    the report. Base findings and recommendations only on data you could
+    actually read.
+
     ## 1. Account snapshot
 
     Build a short picture of the account so every recommendation can be
@@ -181,7 +193,9 @@ task:
        most used services in this account: <list of services checked, with
        their spend for the period>." Then list any services that were
        skipped (excluded, or outside the top {{top_services_count}}) with
-       their spend, and finish with: "To include or exclude services, edit
+       their spend, and any services or checks skipped because of missing
+       permissions, each with the denied API action(s) to grant if the user
+       wants them covered next time. Finish with: "To include or exclude services, edit
        the template's 'Services to include' and 'Services to exclude'
        variables (or change 'Number of top services to check') and run it
        again."
@@ -203,12 +217,14 @@ task:
     its template id (or custom task), region(s), cadence and cron
     expression, suggested variable values, and whether it changes
     resources, followed by a closing "Services checked" note that lists the
-    services checked and skipped and tells the user to edit the template's
+    services checked and skipped (including any skipped for missing
+    permissions, with the denied API actions) and tells the user to edit the template's
     include/exclude variables to change the scope; nothing comes after it.
     Every recommendation is backed by evidence found in the account, names
     a StratoNext gallery template id or a custom task, and cost
     recommendations below {{min_monthly_savings_usd}} USD per month are left
-    out. No account resource or setting was changed. The report has been
+    out. Missing permissions did not stop the run: every accessible
+    service was still checked. No account resource or setting was changed. The report has been
     uploaded as an artifact.
 
 placeholders:
