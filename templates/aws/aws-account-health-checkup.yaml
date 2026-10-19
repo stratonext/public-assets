@@ -28,6 +28,17 @@ task:
     it is false, stay in {{region}} only. Cost Explorer data is account-wide
     either way.
 
+    Service scope: focus the cost and clutter checks on the most used
+    services, meaning the top {{top_services_count}} services by spend in
+    the last {{lookback_days}} days.
+    - Services to always include: {{include_services}}. Check these even if
+      they are not among the most used.
+    - Services to exclude: {{exclude_services}}. Skip these entirely, even
+      if they are among the most used.
+    An empty list means none. Security checks always run account-wide,
+    whatever the service scope. Keep track of exactly which services you
+    checked and which you skipped; the report must end by listing them.
+
     ## 1. Account snapshot
 
     Build a short picture of the account so every recommendation can be
@@ -148,9 +159,9 @@ task:
     3. Findings: cost, clutter, and security.
     4. One-off tasks.
     5. Recurring routine.
-    6. **Proposed scheduled tasks**, always the last section. Close the
-       report with a short call to action asking the user to schedule these
-       tasks in StratoNext as a follow-up, then a table with one row per
+    6. **Proposed scheduled tasks**. Start with a short call to action
+       asking the user to schedule these tasks in StratoNext as a
+       follow-up, then a table with one row per
        recurring task from the routine, ordered by cadence (most frequent
        first), with these columns:
        - Task name, as it should appear in StratoNext.
@@ -165,6 +176,15 @@ task:
        - Mode: "report only" or "changes resources". For tasks that change
          resources, recommend that the user run them once manually and
          review the result before scheduling them.
+    7. **Services checked**, always the very last thing in the report. End
+       with a short closing note that says, in this form: "I checked the
+       most used services in this account: <list of services checked, with
+       their spend for the period>." Then list any services that were
+       skipped (excluded, or outside the top {{top_services_count}}) with
+       their spend, and finish with: "To include or exclude services, edit
+       the template's 'Services to include' and 'Services to exclude'
+       variables (or change 'Number of top services to check') and run it
+       again."
 
     Upload the report as an artifact in the workspace.
 
@@ -182,7 +202,9 @@ task:
     user to schedule them in StratoNext and lists every recurring task with
     its template id (or custom task), region(s), cadence and cron
     expression, suggested variable values, and whether it changes
-    resources.
+    resources, followed by a closing "Services checked" note that lists the
+    services checked and skipped and tells the user to edit the template's
+    include/exclude variables to change the scope; nothing comes after it.
     Every recommendation is backed by evidence found in the account, names
     a StratoNext gallery template id or a custom task, and cost
     recommendations below {{min_monthly_savings_usd}} USD per month are left
@@ -250,3 +272,32 @@ placeholders:
       type: number
       default: 90
       required: true
+
+    - key: top_services_count
+      label: Number of top services to check
+      description: >
+        How many of the account's most used services, ranked by spend, the
+        cost and clutter checks focus on.
+      type: number
+      default: 10
+      required: true
+
+    - key: include_services
+      label: Services to include
+      description: >
+        Comma-separated AWS services to always check, even if they are not
+        among the most used (for example "Amazon RDS, AWS Lambda"). Leave
+        empty for none.
+      type: string
+      default: ""
+      required: false
+
+    - key: exclude_services
+      label: Services to exclude
+      description: >
+        Comma-separated AWS services to skip, even if they are among the
+        most used (for example "Amazon CloudFront"). Leave empty for none.
+        Security checks still run account-wide.
+      type: string
+      default: ""
+      required: false
