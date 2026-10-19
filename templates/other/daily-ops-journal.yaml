@@ -2,10 +2,11 @@
 id: daily-ops-journal
 name: Daily ops journal
 description: >
-  Writes a recurring operations journal for one environment of a project:
-  health and incidents, changes and deployments, cost movement, security
-  findings, and open action items, written as a newspaper-style Markdown
-  edition and converted to PDF. Report only, changes nothing.
+  Writes a daily operations journal for one environment of a project
+  covering the last 24 hours: health and incidents, changes and
+  deployments, cost movement, security findings, and action items, written
+  as a newspaper-style Markdown edition and converted to PDF. Report only,
+  changes nothing.
 cloudProvider: OTHER
 category: operations
 version: 1
@@ -15,9 +16,8 @@ task:
   name: Daily ops journal
   description: >
     Write the ops journal for the selected project's environment, covering
-    everything that happened since the previous journal, and publish it as
-    a newspaper-style Markdown edition and its PDF. Report only, changes
-    nothing.
+    the last 24 hours, and publish it as a newspaper-style Markdown edition
+    and its PDF. Report only, changes nothing.
   instructions: |
     Write the ops journal for the environment selected for this task,
     within the project selected for this task. The journal covers that one
@@ -26,16 +26,14 @@ task:
 
     ## 1. Reporting period
 
-    Find the most recent journal this task has already uploaded to the
-    workspace for this project and environment. The period starts where
-    that journal's period ended and ends now, so a missed run is never a
-    gap. If there is no previous journal, cover the last
-    {{first_run_lookback_days}} days. State the exact start and end of the
-    period at the top of the journal.
+    The journal covers exactly the last 24 hours, ending when this run
+    starts. State the exact start and end of that window at the top of the
+    journal. Every figure, event, and finding in the journal must fall in
+    that window; the only exception is the prior-24-hour spend used as the
+    baseline for the cost comparison.
 
-    Read the previous journal's open action items: every one must appear in
-    this journal again, either as resolved (with what resolved it) or still
-    open.
+    The journal stands on its own. Do not read, compare with, or mention
+    earlier journals or reports.
 
     ## 2. Gather
 
@@ -54,22 +52,23 @@ task:
        current status.
 
     c) **Changes and deployments**: infrastructure changes made in the
-       period from the provider's audit log (for AWS, CloudTrail), grouped
+       last 24 hours from the provider's audit log (for AWS, CloudTrail), grouped
        by who made them; deployments and stack or pipeline runs, and
        whether they succeeded; resources created or deleted. Call out any
        change made outside the usual automation (console or manual CLI).
 
-    d) **Cost**: spend in the period and the change versus the previous
-       period of the same length; the top 5 services by spend; any service
-       whose spend grew by more than {{cost_anomaly_threshold_percent}}%
-       versus the previous period. Include this section only when cost
-       tracking is turned on: {{include_cost}}.
+    d) **Cost**: spend in the last 24 hours and the change versus the 24
+       hours before them, taken from the provider's billing data; the top 5
+       services by spend; any service whose spend grew by more than
+       {{cost_anomaly_threshold_percent}}% versus those prior 24 hours.
+       Include this section only when cost tracking is turned on:
+       {{include_cost}}.
 
     e) **Security**: new findings of {{min_security_severity}} severity or
        higher from the provider's security services (for AWS, Security Hub,
-       GuardDuty, and IAM Access Analyzer), plus any findings from the
-       previous journal that are still open. Include this section only when
-       security tracking is turned on: {{include_security}}.
+       GuardDuty, and IAM Access Analyzer) that were raised or updated in
+       the last 24 hours. Include this section only when security tracking
+       is turned on: {{include_security}}.
 
     f) **Backups and capacity**: backup or snapshot jobs that failed or did
        not run; quotas, disks, or databases above 80% of capacity.
@@ -90,8 +89,9 @@ task:
     - **At a glance**: the environment's key figures for the period.
     - **Security**: the security findings from section 2e, or an empty
       list when there are none.
-    - **Action items**: every item carried over from the previous journal
-      plus new ones raised by this run.
+    - **Action items**: follow-ups raised by what happened in the last 24
+      hours, such as an unresolved incident, a manual change to review, or
+      a failed backup to rerun.
     - Optionally a handful of one-line **briefs**: minor items worth a
       mention but not a full story (a routine deployment, a closed alarm, a
       small cost movement).
@@ -113,7 +113,7 @@ task:
 
     ## 4. Build the data file
 
-    Write a JSON file with this shape. It is the single source both
+    Write a working JSON file with this shape. It is the single source the
     journal is written from:
 
     ```json
@@ -122,7 +122,7 @@ task:
       "environment": "<environment name>",
       "date": "October 15, 2026",
       "date_slug": "2026-10-15",
-      "period": "Oct 14, 2026 09:00 - Oct 15, 2026 09:00 <timezone>",
+      "period": "Oct 14, 2026 09:00 - Oct 15, 2026 09:00 <timezone> (last 24 hours)",
       "status": "Green | Amber | Red",
       "tagline": "Operations Journal - <environment name>",
       "lead": {
@@ -141,8 +141,7 @@ task:
       },
       "security": [ {"headline": "...", "body": "...", "source": "..."} ],
       "action_items": [
-        {"item": "...", "owner": "...", "opened_on": "2026-10-12",
-         "status": "Open | Resolved"}
+        {"item": "...", "owner": "...", "raised_by": "the event it follows up"}
       ],
       "briefs": [ {"headline": "...", "body": "...", "source": "..."} ],
       "sections": {
@@ -171,8 +170,8 @@ task:
     - The lead: the section label in uppercase bold (for example
       `**INCIDENT**`), the headline as `##`, the dek in italics, the byline,
       the body, and the source line in italics.
-    - An "At a glance" table of the key figures, and the open action items
-      as a short table.
+    - An "At a glance" table of the key figures, and the action items as a
+      short table.
     - The secondary stories and security, each story as a `###` headline,
       its body, and its source line in italics. A front-page story that
       has more inside ends with "Continued in <section>".
@@ -183,14 +182,14 @@ task:
     as `###` headlines; lists of items are tables. Front-page stories are
     repeated in full in their section.
 
-    **Back page:** a `## Action items` table (Item, Owner, Opened on,
-    Status), then `## Briefs` as one-line bullets, then `## Notes`.
+    **Back page:** a `## Action items` table (Item, Owner, Raised by),
+    then `## Briefs` as one-line bullets, then `## Notes`.
 
     **Throughout:**
     - Each story ends with its source line in italics.
     - Empty sections print a single honest line instead of disappearing,
       for example "No incidents in this period.", "No new security
-      findings in this period.", or "No open action items."
+      findings in this period.", or "No action items."
     - Start the inside sections and the back page on a new page using the
       page-break syntax your Markdown-to-PDF tool supports, so the front
       page stands alone on page 1.
@@ -207,36 +206,31 @@ task:
 
     ## 7. Publish
 
-    Upload three artifacts to the workspace, named from the project and
+    Upload two artifacts to the workspace, named from the project and
     environment names in lowercase kebab-case (`<project-slug>`,
     `<environment-slug>`) and the end date of the period (`<YYYY-MM-DD>`):
     - `ops-journal-<project-slug>-<environment-slug>-<YYYY-MM-DD>.md`, the
       Markdown journal.
     - `ops-journal-<project-slug>-<environment-slug>-<YYYY-MM-DD>.pdf`, the
       same edition converted to PDF.
-    - `ops-journal-<project-slug>-<environment-slug>-<YYYY-MM-DD>.json`,
-      the data file; the next run reads its `period` and `action_items` to
-      continue from.
 
     This is a report only. Do not create, modify, stop, or delete any
     resource, acknowledge or silence any alarm, or change any setting.
   verificationCriteria: |
-    Three artifacts have been uploaded, named
+    Two artifacts have been uploaded, named
     `ops-journal-<project-slug>-<environment-slug>-<YYYY-MM-DD>` with the
-    extensions `.md`, `.pdf`, and `.json`, all built from the same data and
-    covering only the selected environment. The journal states its
-    reporting period, starting where the previous journal for this
-    environment ended (or covering the last {{first_run_lookback_days}}
-    days on the first run). The Markdown is laid out as a newspaper
-    edition: a front page with a masthead, a dateline with the overall
-    status, a lead story, the at-a-glance table, security, open action
+    extensions `.md` and `.pdf`, carrying the same content and covering
+    only the selected environment. The journal states its reporting
+    period, which is the 24 hours before the run started, and every
+    figure, event, and finding in it falls inside that window. It does not
+    refer to earlier journals or reports. The Markdown is laid out as a
+    newspaper edition: a front page with a masthead, a dateline with the
+    overall status, a lead story, the at-a-glance table, security, action
     items, and an inside list; an inside section for each beat; and a back
-    page with the full action items, briefs, and notes. The PDF is that
+    page with the action items, briefs, and notes. The PDF is that
     Markdown converted with the agent's Markdown-to-PDF tool. Every story
-    carries evidence in its source line, empty sections say so instead of
-    being padded, and every open action item from the previous journal
-    appears again as resolved or still open. No resource, alarm, or
-    setting was changed.
+    carries evidence in its source line and empty sections say so instead
+    of being padded. No resource, alarm, or setting was changed.
 
 placeholders:
   project:
@@ -259,8 +253,8 @@ placeholders:
   schedule:
     label: Run every
     description: >
-      How often to write a journal, in days. Each journal covers the time
-      since the previous one.
+      How often to write a journal, in days. Each journal covers the 24
+      hours before it runs.
     required: true
     defaultIntervalDays: 1
     minIntervalDays: 1
@@ -274,15 +268,6 @@ placeholders:
         example Europe/Rome or America/New_York.
       type: string
       default: UTC
-      required: true
-
-    - key: first_run_lookback_days
-      label: First run lookback (days)
-      description: >
-        How many days the first journal covers, before there is a previous
-        journal to continue from.
-      type: number
-      default: 1
       required: true
 
     - key: include_cost

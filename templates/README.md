@@ -46,9 +46,9 @@ the user's own workspace rather than typed in:
 - `agent`: which agent runs the task.
 - `schedule`: makes the created task recurring, asking the user to run it
   every N days. Set `defaultIntervalDays`, and optionally `minIntervalDays`
-  and `maxIntervalDays`. Because the interval can change after import,
-  have a recurring task work out its own period (for example "since the
-  previous report") rather than hard-coding one.
+  and `maxIntervalDays`. State in the instructions which window each run
+  covers (for example "the last 24 hours"), since the interval only sets
+  how often it runs.
 
 `other/daily-ops-journal.yaml` uses all four.
 
