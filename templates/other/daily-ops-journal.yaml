@@ -2,11 +2,11 @@
 id: daily-ops-journal
 name: Daily ops journal
 description: >
-  Writes a recurring operations journal for a project across the customer
-  environments you select: health and incidents, changes and deployments,
-  cost movement, security findings, and open action items, published as a
-  multi-page, newspaper-style PDF edition and a Markdown journal.
-  Report only, changes nothing.
+  Writes a recurring operations journal for one environment of a project:
+  health and incidents, changes and deployments, cost movement, security
+  findings, and open action items, published as a multi-page,
+  newspaper-style PDF edition and a Markdown journal. Report only, changes
+  nothing.
 cloudProvider: OTHER
 category: operations
 version: 1
@@ -15,35 +15,34 @@ tags: [operations, journal, reporting, daily, health, incidents, cost, security]
 task:
   name: Daily ops journal
   description: >
-    Write the ops journal for the selected project and environments,
-    covering everything that happened since the previous journal, and
-    publish it as a newspaper-style PDF edition and a Markdown journal.
-    Report only, changes nothing.
+    Write the ops journal for the selected project's environment, covering
+    everything that happened since the previous journal, and publish it as
+    a newspaper-style PDF edition and a Markdown journal. Report only,
+    changes nothing.
   instructions: |
-    Write the ops journal for the project selected for this task, covering
-    every environment selected for this task. This task runs on a schedule;
-    each run produces one journal entry. Use {{timezone}} for every date and
-    time in the journal.
+    Write the ops journal for the environment selected for this task,
+    within the project selected for this task. The journal covers that one
+    environment only. This task runs on a schedule; each run produces one
+    journal entry. Use {{timezone}} for every date and time in the journal.
 
     ## 1. Reporting period
 
     Find the most recent journal this task has already uploaded to the
-    workspace. The period starts where that journal's period ended and ends
-    now, so a missed run is never a gap. If there is no previous journal,
-    cover the last {{first_run_lookback_days}} days. State the exact start
-    and end of the period at the top of the journal.
+    workspace for this project and environment. The period starts where
+    that journal's period ended and ends now, so a missed run is never a
+    gap. If there is no previous journal, cover the last
+    {{first_run_lookback_days}} days. State the exact start and end of the
+    period at the top of the journal.
 
     Read the previous journal's open action items: every one must appear in
     this journal again, either as resolved (with what resolved it) or still
     open.
 
-    ## 2. Gather, per environment
+    ## 2. Gather
 
-    Go through each selected environment one by one, using that
-    environment's own cloud provider APIs and monitoring. Only use
-    read-only calls. If a source is not available or not enabled for an
-    environment, say so in that environment's section instead of skipping
-    it silently.
+    Use the environment's own cloud provider APIs and monitoring. Only use
+    read-only calls. If a source is not available or not enabled, say so in
+    the journal instead of skipping it silently.
 
     a) **Health and availability**: alarms or alerts that fired, how long
        they lasted, and whether they are still firing; unhealthy load
@@ -80,15 +79,16 @@ task:
 
     The journal is styled as a multi-page newspaper edition, like the Wall
     Street Journal: a front page with the headlines of the period, then an
-    inside section for each environment, then a back page with the action
-    items. Pick the front-page content from what you gathered:
+    inside section for each beat from section 2, then a back page with the
+    action items. Pick the front-page content from what you gathered:
     - One **lead**: the single most important ops event of the period, in
       this order of priority: an unresolved incident, a critical security
       finding, a resolved incident, a failed or risky change, a cost
       anomaly, a failed backup. If nothing qualifies, the lead is an
-      "all clear" story stating that the environments ran without
+      "all clear" story stating that the environment ran without
       incidents, with the period's notable figures.
     - One to three **secondary** stories: the next most important events.
+    - **At a glance**: the environment's key figures for the period.
     - **Security**: the security findings from section 2e, or an empty
       list when there are none.
     - **Action items**: every item carried over from the previous journal
@@ -97,17 +97,16 @@ task:
       mention but not a full story (a routine deployment, a closed alarm, a
       small cost movement).
 
-    Then, for every environment, write its inside section: a one-line
-    summary and stories for each beat from section 2 (health, incidents,
-    changes, cost, security, backups and capacity). Front-page stories are
-    repeated in full on their environment's page; the front page carries
-    the short version.
+    Then write the inside sections: stories for each beat (health,
+    incidents, changes, cost, security, backups and capacity). Front-page
+    stories are repeated in full in their beat's section; the front page
+    carries the short version.
 
     Write original 2-4 sentence stories in plain language for each item.
-    Every item must carry its evidence in a `source` line: the environment,
-    and a resource id, alarm name, audit-log event, or figure with its
-    timestamp. Discard anything you cannot back with evidence; never pad a
-    quiet period with filler. An empty section is a valid, honest result.
+    Every item must carry its evidence in a `source` line: a resource id,
+    alarm name, audit-log event, or figure with its timestamp. Discard
+    anything you cannot back with evidence; never pad a quiet period with
+    filler. An empty section is a valid, honest result.
 
     Set the overall status: Red means an unresolved incident or a critical
     security finding; Amber means a resolved incident, a firing alarm, a
@@ -121,57 +120,53 @@ task:
     ```json
     {
       "project": "<project name>",
+      "environment": "<environment name>",
       "date": "October 15, 2026",
       "date_slug": "2026-10-15",
       "period": "Oct 14, 2026 09:00 - Oct 15, 2026 09:00 <timezone>",
       "status": "Green | Amber | Red",
-      "tagline": "Operations Journal - <environment names>",
+      "tagline": "Operations Journal - <environment name>",
       "lead": {
         "section": "INCIDENT | SECURITY | CHANGES | COST | BACKUPS | ALL CLEAR",
         "headline": "...",
         "dek": "one-line subhead",
         "byline": "Compiled from <data sources, e.g. CloudWatch, CloudTrail>",
         "body": "paragraph one\n\nparagraph two",
-        "source": "<environment>, <evidence>, <timestamp>"
+        "source": "<evidence>, <timestamp>"
       },
       "secondary": [ {"headline": "...", "body": "...", "source": "..."} ],
-      "environments": [
-        {"name": "...", "status": "Green | Amber | Red", "alarms": 0,
-         "incidents": 0, "changes": 0, "spend": "USD ...",
-         "spend_change": "+4%", "new_security_findings": 0}
-      ],
+      "at_a_glance": {
+        "alarms": 0, "incidents": 0, "changes": 0, "manual_changes": 0,
+        "spend": "USD ...", "spend_change": "+4%",
+        "new_security_findings": 0, "failed_backups": 0
+      },
       "security": [ {"headline": "...", "body": "...", "source": "..."} ],
       "action_items": [
-        {"item": "...", "environment": "...", "owner": "...",
-         "opened_on": "2026-10-12", "status": "Open | Resolved"}
+        {"item": "...", "owner": "...", "opened_on": "2026-10-12",
+         "status": "Open | Resolved"}
       ],
       "briefs": [ {"headline": "...", "body": "...", "source": "..."} ],
-      "environment_pages": [
-        {"environment": "...", "status": "Green | Amber | Red",
-         "summary": "one-line state of the environment",
-         "sections": {
-           "health": [ {"headline": "...", "body": "...", "source": "..."} ],
-           "incidents": [], "changes": [], "cost": [], "security": [],
-           "backups_and_capacity": []
-         }}
-      ],
+      "sections": {
+        "health": [ {"headline": "...", "body": "...", "source": "..."} ],
+        "incidents": [], "changes": [], "cost": [], "security": [],
+        "backups_and_capacity": []
+      },
       "notes": [ "data sources that were unavailable or could not be checked" ]
     }
     ```
 
-    Leave out the cost columns, stories, and sections when cost tracking is
-    off, and the security list and sections when security tracking is off.
+    Leave out the cost figures, stories, and section when cost tracking is
+    off, and the security list and section when security tracking is off.
 
     ## 5. Render the Markdown
 
     Render the data file to Markdown, in this order: the masthead line
-    `# <project> Ops Daily`, the date, period, overall status and tagline;
-    the lead (section label, headline, dek, byline, body, source); the
-    secondary stories; an environment status table; security (or "No new
-    security findings in this period."); an action items table; the briefs;
-    one `## <environment>` section per entry in `environment_pages`, with a
-    `###` heading per beat; and the notes. The Markdown and the PDF carry
-    the same content.
+    `# <project> Ops Daily`, the environment, date, period, overall status
+    and tagline; the lead (section label, headline, dek, byline, body,
+    source); the secondary stories; an at-a-glance table; security (or "No
+    new security findings in this period."); an action items table; the
+    briefs; one `##` section per beat from `sections`; and the notes. The
+    Markdown and the PDF carry the same content.
 
     ## 6. Render the PDF edition
 
@@ -182,41 +177,40 @@ task:
 
     **Page A1, the front page:**
     - **Masthead**: `<project> Ops Daily` centered in a large, bold serif
-      (Georgia or Times New Roman), with the tagline in small caps under
-      it. Below it, a dateline bar between thin double rules: the date on
-      the left, the period in the middle, and the overall status on the
-      right, in green, amber, or red.
+      (Georgia or Times New Roman), with the tagline (naming the
+      environment) in small caps under it. Below it, a dateline bar between
+      thin double rules: the date on the left, the period in the middle,
+      and the overall status on the right, in green, amber, or red.
     - **Body**: black serif text on white with no other colors, in columns
       separated by thin vertical rules. The lead runs across the two left
       columns with an uppercase section label, a large bold headline, an
       italic dek, a small-caps byline, and the body; the right column holds
-      the environment status box and the open action items. Secondary
-      stories and security follow in columns below.
-    - **Inside box**: a small "Inside" index listing each environment and
-      the back page with their page numbers, for example
-      "production ... A2".
+      the at-a-glance box and the open action items. Secondary stories and
+      security follow in columns below.
+    - **Inside box**: a small "Inside" index listing each beat section and
+      the back page with their page numbers, for example "Changes ... A3".
     - A front-page story that has more on an inside page ends with
       "Continued on A<n>".
     - The front page must fit on page A1. If it does not, move content
       inside instead of cutting it: the briefs go to the back page, then
-      secondary stories beyond the first go to their environment's page,
-      then shorten the front-page bodies. Never move the lead, the
-      environment status box, security, or the open action items.
+      secondary stories beyond the first go to their beat's section, then
+      shorten the front-page bodies. Never move the lead, the at-a-glance
+      box, security, or the open action items.
 
-    **Inside pages, one section per environment:**
-    - Each environment starts on a new page, under a section banner with
-      the environment name in large small caps, its status in color, and
-      its one-line summary.
-    - Below the banner, a subhead per beat (Health, Incidents, Changes,
-      Cost, Security, Backups and capacity) with its stories in two or
-      three columns separated by thin rules. Lists of items are tables
-      whose header row repeats when a table breaks across pages.
-    - A section may run over several pages; never leave a beat subhead or
-      a headline at the bottom of a page apart from the start of its story.
+    **Inside pages, one section per beat:**
+    - Sections run in this order: Health, Incidents, Changes, Cost,
+      Security, Backups and capacity. Each starts under a section banner
+      with its name in large small caps; consecutive short sections may
+      share a page.
+    - Stories run in two or three columns separated by thin rules. Lists of
+      items are tables whose header row repeats when a table breaks across
+      pages.
+    - Never leave a section banner or a headline at the bottom of a page
+      apart from the start of its story.
 
     **Back page:**
-    - The full action items table (Item, Environment, Owner, Opened on,
-      Status), the briefs, and the notes.
+    - The full action items table (Item, Owner, Opened on, Status), the
+      briefs, and the notes, starting on a new page.
 
     **On every page:**
     - Each story ends with its `source` line in small italic type.
@@ -224,42 +218,44 @@ task:
       for example "No incidents in this period.", "No new security
       findings in this period.", or "No open action items."
     - Every page after A1 has a running header with `<project> Ops Daily`,
-      the date, and the section name, and every page has its page number
-      in the footer.
+      the environment, and the date, and every page has its page number in
+      the footer.
 
     Check the PDF before publishing: page A1 holds only the front page,
-    every selected environment has its own section, and the number of pages
-    is one front page plus at least one page per environment plus the back
-    page.
+    every beat section is present, and the back page comes last.
 
     ## 7. Publish
 
-    Upload three artifacts to the workspace, named from the project name in
-    lowercase kebab-case (`<project-slug>`) and the end date of the period
-    (`<YYYY-MM-DD>`):
-    - `ops-journal-<project-slug>-<YYYY-MM-DD>.md`, the Markdown journal.
-    - `ops-journal-<project-slug>-<YYYY-MM-DD>.pdf`, the PDF edition.
-    - `ops-journal-<project-slug>-<YYYY-MM-DD>.json`, the data file; the
-      next run reads its `period` and `action_items` to continue from.
+    Upload three artifacts to the workspace, named from the project and
+    environment names in lowercase kebab-case (`<project-slug>`,
+    `<environment-slug>`) and the end date of the period (`<YYYY-MM-DD>`):
+    - `ops-journal-<project-slug>-<environment-slug>-<YYYY-MM-DD>.md`, the
+      Markdown journal.
+    - `ops-journal-<project-slug>-<environment-slug>-<YYYY-MM-DD>.pdf`, the
+      PDF edition.
+    - `ops-journal-<project-slug>-<environment-slug>-<YYYY-MM-DD>.json`,
+      the data file; the next run reads its `period` and `action_items` to
+      continue from.
 
     This is a report only. Do not create, modify, stop, or delete any
     resource, acknowledge or silence any alarm, or change any setting.
   verificationCriteria: |
     Three artifacts have been uploaded, named
-    `ops-journal-<project-slug>-<YYYY-MM-DD>` with the extensions `.md`,
-    `.pdf`, and `.json`, all built from the same data. The journal states
-    its reporting period, starting where the previous journal ended (or
-    covering the last {{first_run_lookback_days}} days on the first run),
-    and covers every selected environment. The PDF is a multi-page
-    newspaper edition: a front page (A1) with a masthead, a dateline with
-    the overall status, a lead story, the environment status box,
-    security, open action items, and an index of the inside pages; one
-    inside section per environment starting on its own page; and a back
+    `ops-journal-<project-slug>-<environment-slug>-<YYYY-MM-DD>` with the
+    extensions `.md`, `.pdf`, and `.json`, all built from the same data and
+    covering only the selected environment. The journal states its
+    reporting period, starting where the previous journal for this
+    environment ended (or covering the last {{first_run_lookback_days}}
+    days on the first run). The PDF is a multi-page newspaper edition: a
+    front page (A1) with a masthead, a dateline with the overall status, a
+    lead story, the at-a-glance box, security, open action items, and an
+    index of the inside pages; an inside section for each beat; and a back
     page with the full action items, briefs, and notes, with page numbers
-    on every page. The Markdown carries the same content. Every story carries evidence in its source line, empty
-    sections say so instead of being padded, and every open action item
-    from the previous journal appears again as resolved or still open. No
-    resource, alarm, or setting was changed.
+    on every page. The Markdown carries the same content. Every story
+    carries evidence in its source line, empty sections say so instead of
+    being padded, and every open action item from the previous journal
+    appears again as resolved or still open. No resource, alarm, or
+    setting was changed.
 
 placeholders:
   project:
@@ -268,12 +264,11 @@ placeholders:
     required: true
 
   environment:
-    label: Environments
+    label: Environment
     description: >
-      The project's environments to cover, for example production and
-      staging. Each one gets its own section in the journal.
+      The project's environment to cover, for example production. To
+      journal another environment, import this template again for it.
     required: true
-    multiple: true
 
   agent:
     label: Assignee
@@ -311,7 +306,7 @@ placeholders:
 
     - key: include_cost
       label: Include cost
-      description: Add a cost section per environment with spend changes and anomalies.
+      description: Add a cost section with spend changes and anomalies.
       type: boolean
       default: true
       required: true
@@ -327,7 +322,7 @@ placeholders:
 
     - key: include_security
       label: Include security
-      description: Add a security section per environment with new findings.
+      description: Add a security section with new findings.
       type: boolean
       default: true
       required: true

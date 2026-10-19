@@ -42,10 +42,7 @@ the user's own workspace rather than typed in:
 
 - `project`: a picker of the user's projects. When it is set, the
   `environment` picker only offers that project's environments.
-- `environment`: a picker of the user's environments. Add `multiple: true`
-  to let the user select several; the task then runs against all of them,
-  so write the instructions per environment ("go through each selected
-  environment").
+- `environment`: a picker of the user's environments; one per task.
 - `agent`: which agent runs the task.
 - `schedule`: makes the created task recurring, asking the user to run it
   every N days. Set `defaultIntervalDays`, and optionally `minIntervalDays`

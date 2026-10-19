@@ -82,7 +82,7 @@ properties:
       values substituted into the `task` fields above.
     properties:
       project: { $ref: "#/$defs/placeholder" }
-      environment: { $ref: "#/$defs/environmentPlaceholder" }
+      environment: { $ref: "#/$defs/placeholder" }
       agent: { $ref: "#/$defs/placeholder" }
       schedule: { $ref: "#/$defs/schedulePlaceholder" }
       variables:
@@ -98,22 +98,6 @@ $defs:
       label: { type: string, minLength: 1 }
       description: { type: string }
       required: { type: boolean }
-
-  environmentPlaceholder:
-    type: object
-    required: [label]
-    additionalProperties: false
-    properties:
-      label: { type: string, minLength: 1 }
-      description: { type: string }
-      required: { type: boolean }
-      multiple:
-        type: boolean
-        default: false
-        description: >-
-          When true, the picker lets the user select several environments
-          and the task runs against all of them. Defaults to a single
-          environment.
 
   schedulePlaceholder:
     type: object
