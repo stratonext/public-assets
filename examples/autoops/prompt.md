@@ -37,8 +37,6 @@ create everything.
    own, everything else waits for my approval)
 - Daily controller time (UTC): 06:00
 - Maximum new tasks the controller may start per day: 5
-- Who to notify about critical issues: <name, team, or channel, if
-  StratoNext supports notifications>
 
 ## Step 1. Discover
 
@@ -55,7 +53,7 @@ Use the StratoNext skill to download and read:
   duplicating them.
 - What the StratoNext skill lets you do: create and edit templates,
   create tasks, schedule tasks, start a task from inside another task,
-  write project notes, notify people. The plan must only rely on what is
+  write project notes. The plan must only rely on what is
   actually available; for anything missing, plan a fallback and tell me.
 
 If the project or a deployment cannot be found, stop and tell me. If you
@@ -108,7 +106,10 @@ The heart of the setup: one task per deployment, every day. Each run:
 3. Triages every finding as critical, warning, or info:
    - Critical (service down or degraded, data at risk, security exposure,
      a failed backup of production data): immediately start an
-     investigation task for it and notify the people in the inputs.
+     investigation task for it, and flag it as CRITICAL at the top of
+     Open work in the project notes and of the run summary, so it is the
+     first thing anyone sees. Do not try to send notifications;
+     StratoNext does not support them yet.
    - Warning: start a maintenance task if a known fix exists in the
      notes, otherwise add it to Open work for the next report.
    - Info: record it in the notes only.
@@ -154,7 +155,8 @@ networking, or permissions without my approval, whatever the autonomy.
   journal of the last 24 hours in UTC, written in Markdown and converted
   to PDF with the Markdown-to-PDF tool: health, incidents, changes,
   cost, security, backups, with a lead story, an overall Green, Amber, or
-  Red status, and action items taken from Open work.
+  Red status, and action items taken from Open work. Any open CRITICAL
+  item is the lead story.
 - **Weekly cost and savings digest**: the deployment's spend over the
   last 7 days and ranked savings with estimated monthly USD, effort, and
   risk, as Markdown and PDF.
@@ -191,7 +193,7 @@ Guardrails that self-improvement can never change:
 - At most 3 template changes per day; every change goes in the
   AutoOps changelog with its reason and evidence, and is listed in the
   next daily journal.
-- Changes to schedules, notification targets, or the low-risk list are
+- Changes to schedules or the low-risk list are
   proposals for me to approve, never applied directly.
 - If a template change makes the next run fail, revert it to the
   previous version and record why.
@@ -212,7 +214,7 @@ minutes:
   it does, schedule or trigger, which deployments).
 - **A typical day**: what runs when, in UTC.
 - **What happens when something breaks**: the path from a critical
-  finding to an investigation, a notification, and a fix, under the
+  finding to an investigation, where it is flagged, and a fix, under the
   chosen autonomy.
 - **Low-risk fixes**: the exact list Maintenance may apply on its own
   (only under fix-low-risk).
