@@ -1,4 +1,4 @@
-# Autopilot: hand an application's monitoring and maintenance to StratoNext
+# AutoOps: hand an application's monitoring and maintenance to StratoNext
 
 Paste the prompt below into an agent chat that has the StratoNext skill
 installed. Fill in the **Inputs** block first.
@@ -76,7 +76,7 @@ the instructions instead of asking for them.
 ## Step 2. Design the operating setup
 
 Design the following for each selected deployment, named
-`<project-slug>-<deployment-slug>-<role>`. Leave out anything the
+`autoops-<project-slug>-<deployment-slug>-<role>`. Leave out anything the
 deployment has nothing for, and say why.
 
 ### Project notes: the shared memory
@@ -92,7 +92,7 @@ the start and updates at the end:
   fix or workaround.
 - **Open work**: every task the setup has started and not finished,
   with its reason and status, so nothing is started twice.
-- **Autopilot changelog**: every change the setup makes to its own
+- **AutoOps changelog**: every change the setup makes to its own
   templates, schedules, or notes structure, with the date, reason, and
   evidence.
 
@@ -189,7 +189,7 @@ Guardrails that self-improvement can never change:
 - Never delete a template, task, schedule, or note; disable or archive
   it instead, with the reason in the changelog.
 - At most 3 template changes per day; every change goes in the
-  Autopilot changelog with its reason and evidence, and is listed in the
+  AutoOps changelog with its reason and evidence, and is listed in the
   next daily journal.
 - Changes to schedules, notification targets, or the low-risk list are
   proposals for me to approve, never applied directly.
