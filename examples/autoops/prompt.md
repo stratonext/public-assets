@@ -88,16 +88,19 @@ the start and updates at the end:
   real observations.
 - **Known issues**: recurring problems, their signature, and the known
   fix or workaround.
-- **Open work**: every task the setup has started and not finished,
-  with its reason and status, so nothing is started twice.
 - **AutoOps changelog**: every change the setup makes to its own
   templates, schedules, or notes structure, with the date, reason, and
   evidence.
 
 ### Controller (daily, at the controller time)
 
-The heart of the setup: one task per deployment, every day. Each run:
-1. Reads the project notes.
+The heart of the setup: one task per deployment, every day. Open work is
+not kept in the notes: it is the setup's own `autoops-` tasks in
+StratoNext that are still working or have failed. Each run:
+1. Reads the project notes, and lists this deployment's `autoops-` tasks
+   that are working or failed. For each failed one, decide whether to
+   start it again (once), start an investigation of the failure, or
+   leave it for me, and say which in the run summary.
 2. Runs the health checks: alarms and health checks firing, error and
    latency against the baselines, failed or restarted compute, failed
    pipeline runs, failed backups, capacity above 80%, new high-severity
@@ -107,19 +110,18 @@ The heart of the setup: one task per deployment, every day. Each run:
    - Critical (service down or degraded, data at risk, security exposure,
      a failed backup of production data): immediately start an
      investigation task for it, and flag it as CRITICAL at the top of
-     Open work in the project notes and of the run summary, so it is the
-     first thing anyone sees. Do not try to send notifications;
+     the run summary, so it is the first thing anyone sees. Do not try to send notifications;
      StratoNext does not support them yet.
    - Warning: start a maintenance task if a known fix exists in the
-     notes, otherwise add it to Open work for the next report.
+     notes, otherwise list it in the run summary for the next report.
    - Info: record it in the notes only.
-   Before starting any task, check Open work: never start a second task
-   for an issue that already has one open; update the open one instead.
-   Never start more than the daily maximum of new tasks; if more are
-   needed, start the most severe ones and list the rest in Open work.
-4. Updates the notes: Baselines with the day's values, Known issues with
-   any new recurring pattern, and Open work with what it started or
-   closed.
+   Before starting any task, check the working `autoops-` tasks: never
+   start a second task for an issue that already has one working. Never
+   start more than the daily maximum of new tasks; if more are needed,
+   start the most severe ones and list the rest in the run summary; the
+   next run picks them up again.
+4. Updates the notes: Baselines with the day's values, and Known issues
+   with any new recurring pattern.
 5. Improves the setup (see "Self-improvement" below).
 6. Ends with a short run summary: status per deployment, tasks started,
    and changes made to the setup.
@@ -130,8 +132,8 @@ A template the controller starts with the issue, its first evidence, and
 the time it began. It gathers alarms, logs, metrics, audit-log changes,
 and deployments around that time, builds a timeline, identifies the
 most likely cause with evidence, assesses impact, and recommends a fix.
-It writes its findings to the project notes (Known issues and Open work)
-and publishes them as a Markdown artifact. It is read-only.
+It adds what it learns to Known issues in the project notes and
+publishes its findings as a Markdown artifact. It is read-only.
 
 ### Maintenance (started on demand by the controller)
 
@@ -155,14 +157,17 @@ networking, or permissions without my approval, whatever the autonomy.
   journal of the last 24 hours in UTC, written in Markdown and converted
   to PDF with the Markdown-to-PDF tool: health, incidents, changes,
   cost, security, backups, with a lead story, an overall Green, Amber, or
-  Red status, and action items taken from Open work. Any open CRITICAL
-  item is the lead story.
+  Red status, and action items taken from the controller's run summary
+  and the working or failed `autoops-` tasks. Any CRITICAL item is the
+  lead story.
 - **Weekly cost and savings digest**: the deployment's spend over the
   last 7 days and ranked savings with estimated monthly USD, effort, and
   risk, as Markdown and PDF.
 - **Weekly drift and security check**: what is running versus what the
   deployment defines, and high-severity security issues, as a Markdown
-  report. New findings go into Open work for the controller.
+  report. For new high-severity findings it starts an investigation or
+  maintenance task, following the same rules as the controller (no
+  duplicates of working tasks, within the daily maximum).
 
 ### Monthly review (first day of each month)
 
