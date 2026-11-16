@@ -1,0 +1,503 @@
+# JSON Schema (draft 2020-12) for a StratoNext workflow file, written in YAML.
+#
+# A workflow is the YAML the workflow editor shows under "YAML": one trigger under `on`, a graph of
+# typed `nodes`, and the expressions that connect them. Point your editor's YAML language server
+# or a CI check at the raw URL of this file (its `$id`) to validate a workflow before publishing
+# it. See https://docs.stratonext.ai/workflows/ for the language and /workflows/nodes/ for every
+# node type.
+#
+# Generated, do not edit by hand: the platform builds this schema from the node types it ships
+# (`GET https://api.prod.stratonext.com/v1/workflows/schema`, no sign-in needed), so it is
+# regenerated here whenever a node type or its inputs change. See README.md next to it.
+$schema: https://json-schema.org/draft/2020-12/schema
+$id: https://raw.githubusercontent.com/stratonext/public-assets/main/workflows/stratonext-workflow-schema.yaml
+title: StratoNext workflow
+description: 'A workflow definition (apiVersion workflows.stratonext.com/v1): one trigger, a graph of
+  typed nodes, and the expressions that connect them.'
+type: object
+additionalProperties: false
+required:
+- apiVersion
+- kind
+- name
+- 'on'
+- nodes
+properties:
+  apiVersion:
+    const: workflows.stratonext.com/v1
+  kind:
+    const: Workflow
+  name:
+    type: string
+    pattern: ^[a-z0-9]+(-[a-z0-9]+)*$
+    maxLength: 64
+    description: Kebab-case, unique in the workspace.
+  description:
+    type: string
+  'on':
+    type: object
+    minProperties: 1
+    maxProperties: 1
+    additionalProperties: false
+    description: Exactly one of manual, schedule, webhook, pull_request.
+    properties:
+      manual:
+        type: object
+        additionalProperties: false
+        properties:
+          inputs:
+            type: object
+            propertyNames:
+              pattern: ^[a-z][a-z0-9_]*$
+            additionalProperties:
+              type: object
+              additionalProperties: false
+              properties:
+                type:
+                  enum:
+                  - string
+                  - number
+                  - boolean
+                  default: string
+                required:
+                  type: boolean
+                default: {}
+                description:
+                  type: string
+      schedule:
+        type: array
+        minItems: 1
+        items:
+          type: object
+          additionalProperties: false
+          required:
+          - cron
+          properties:
+            cron:
+              type: string
+              description: 5 cron fields ("0 8 * * 1"), or EventBridge cron(…) / rate(…).
+            timezone:
+              type: string
+              default: UTC
+              description: IANA name, e.g. Europe/Rome.
+      webhook:
+        type: object
+        maxProperties: 0
+        description: The call's JSON body becomes the run's inputs and trigger.payload.
+      pull_request:
+        type: object
+        additionalProperties: false
+        required:
+        - types
+        - repositories
+        properties:
+          types:
+            type: array
+            minItems: 1
+            items:
+              enum:
+              - opened
+              - merged
+              - failed
+          repositories:
+            type: array
+            minItems: 1
+            items:
+              type: string
+              description: owner/name, linked to a project of the workspace.
+          branches:
+            type: array
+            items:
+              type: string
+            description: Base branches; all when omitted.
+  defaults:
+    type: object
+    additionalProperties: false
+    description: Applied to every node that does not set its own.
+    properties:
+      timeout:
+        type: string
+        pattern: ^([0-9]{1,9})(ms|s|m|h)$
+        description: A duration, e.g. 30s, 5m, 2h.
+      retry:
+        type: object
+        additionalProperties: false
+        properties:
+          max_attempts:
+            type: integer
+            minimum: 1
+            maximum: 10
+          backoff:
+            enum:
+            - fixed
+            - exponential
+          interval:
+            type: string
+            pattern: ^([0-9]{1,9})(ms|s|m|h)$
+            description: A duration, e.g. 30s, 5m, 2h.
+  runs-on:
+    anyOf:
+    - type: string
+    - type: array
+      items:
+        type: string
+    description: Labels every runner-backed node needs unless it sets its own.
+  vars:
+    type: object
+    description: Values the expressions read as vars.<name>; a run may override them.
+  nodes:
+    type: object
+    minProperties: 1
+    maxProperties: 50
+    propertyNames:
+      pattern: ^[a-z][a-z0-9_]*$
+    additionalProperties:
+      type: object
+      additionalProperties: false
+      required:
+      - uses
+      properties:
+        name:
+          type: string
+        description:
+          type: string
+        uses:
+          enum:
+          - stratonext.asset.get@v1
+          - stratonext.decide@v1
+          - stratonext.http.request@v1
+          - stratonext.script.run@v1
+          - stratonext.task.cancel@v1
+          - stratonext.task.create@v1
+          - stratonext.task.get@v1
+        with:
+          type: object
+          description: The node type's inputs; see the per-type rules below.
+        needs:
+          anyOf:
+          - type: string
+          - type: array
+            items:
+              type: string
+          description: The nodes this one runs after.
+        if:
+          type: string
+          description: A condition; the node is skipped when it is false.
+        runs-on:
+          anyOf:
+          - type: string
+          - type: array
+            items:
+              type: string
+          description: Labels the runner must have.
+        timeout:
+          type: string
+          pattern: ^([0-9]{1,9})(ms|s|m|h)$
+          description: A duration, e.g. 30s, 5m, 2h.
+        retry:
+          type: object
+          additionalProperties: false
+          properties:
+            max_attempts:
+              type: integer
+              minimum: 1
+              maximum: 10
+            backoff:
+              enum:
+              - fixed
+              - exponential
+            interval:
+              type: string
+              pattern: ^([0-9]{1,9})(ms|s|m|h)$
+              description: A duration, e.g. 30s, 5m, 2h.
+        continue_on_error:
+          type: boolean
+      allOf:
+      - if:
+          properties:
+            uses:
+              const: stratonext.asset.get@v1
+        then:
+          properties:
+            with:
+              type: object
+              additionalProperties: false
+              description: 'Reads an asset of a project in this workspace: its metadata and a download
+                URL valid for a few minutes. Changes nothing.'
+              properties:
+                project:
+                  type: string
+                  description: ID of the project that holds the asset.
+                asset:
+                  type: string
+                  description: ID of the asset, picked from the project's assets.
+              required:
+              - project
+              - asset
+      - if:
+          properties:
+            uses:
+              const: stratonext.decide@v1
+        then:
+          properties:
+            with:
+              type: object
+              additionalProperties: false
+              description: 'Picks a branch with ordered rules: over plain facts (numbers, strings, booleans)
+                for a deterministic decision, or over the answers to typed questions a model judges.'
+              properties:
+                state:
+                  description: The facts to decide on — usually outputs of earlier nodes. Structured data,
+                    not prose. Rules read it as 'state.<field>'.
+                questions:
+                  anyOf:
+                  - type: object
+                  - $ref: '#/$defs/expression'
+                  description: 'Question ID to {type: noul | choice | score, instructions, criteria}.
+                    Omit for a deterministic decision: the rules then read ''state'' directly and no model
+                    is asked.'
+                thresholds:
+                  anyOf:
+                  - type: object
+                  - $ref: '#/$defs/expression'
+                  description: Named values the rules read as thresholds.<name>, so a number is tuned
+                    in one place; a value may be an expression.
+                decide:
+                  anyOf:
+                  - type: array
+                  - $ref: '#/$defs/expression'
+                  description: Ordered rules {when, choice}; the first match wins, a rule without 'when'
+                    is the default.
+                uncertain:
+                  anyOf:
+                  - type: object
+                  - $ref: '#/$defs/expression'
+                  description: '{when, then}: what to do when a judgment is too close to call. ''then''
+                    is ''fail'' or {choice}.'
+                on_error:
+                  description: '''fail'' (default) or {choice}: the branch to take when a decision cannot
+                    be made.'
+              required:
+              - state
+      - if:
+          properties:
+            uses:
+              const: stratonext.http.request@v1
+        then:
+          properties:
+            with:
+              type: object
+              additionalProperties: false
+              description: Calls a web API from your runner's network and exposes the status, headers
+                and body to later nodes.
+              properties:
+                method:
+                  anyOf:
+                  - enum:
+                    - GET
+                    - POST
+                    - PUT
+                    - PATCH
+                    - DELETE
+                    - HEAD
+                  - $ref: '#/$defs/expression'
+                  description: HTTP method. Defaults to GET.
+                url:
+                  type: string
+                  description: Absolute http:// or https:// URL, reached from the runner.
+                headers:
+                  anyOf:
+                  - type: object
+                  - $ref: '#/$defs/expression'
+                  description: Request headers, name to value.
+                secret_headers:
+                  anyOf:
+                  - type: object
+                  - $ref: '#/$defs/expression'
+                  description: 'Headers filled on the runner from its secrets: name to {secret, prefix}.
+                    The value never reaches StratoNext.'
+                query:
+                  anyOf:
+                  - type: object
+                  - $ref: '#/$defs/expression'
+                  description: Query string parameters, name to value; appended to the URL.
+                body:
+                  description: Request body. Objects and lists are sent as JSON.
+                timeout:
+                  type: string
+                  pattern: ^([0-9]{1,9})(ms|s|m|h)$
+                  description: Request timeout, up to 30s. Defaults to 10s.
+                expect_status:
+                  type: string
+                  description: Accepted status codes, e.g. '2xx' or '200,201,404'. Defaults to '2xx'.
+                response:
+                  anyOf:
+                  - enum:
+                    - auto
+                    - json
+                    - text
+                  - $ref: '#/$defs/expression'
+                  description: 'How to read the body: auto (JSON when it parses), json, or text.'
+              required:
+              - url
+      - if:
+          properties:
+            uses:
+              const: stratonext.script.run@v1
+        then:
+          properties:
+            with:
+              type: object
+              additionalProperties: false
+              description: Runs a shell script on one of your runners, with project assets downloaded
+                next to it, and exposes its exit code and output to later nodes. Runners advertise the
+                interpreters they have as shell:bash, shell:sh, shell:pwsh and shell:python labels.
+              properties:
+                script:
+                  type: string
+                  description: The script text, run as a file with the chosen shell.
+                shell:
+                  anyOf:
+                  - enum:
+                    - bash
+                    - sh
+                    - pwsh
+                    - python
+                  - $ref: '#/$defs/expression'
+                  description: The interpreter on the runner. Defaults to bash.
+                project:
+                  type: string
+                  description: ID of the project whose assets the script uses; needed with 'assets'.
+                assets:
+                  anyOf:
+                  - type: array
+                  - $ref: '#/$defs/expression'
+                  description: 'IDs of assets of the project, picked from its assets. Each is downloaded
+                    into the working directory under its name, executable, before the script runs: an
+                    asset deploy.sh runs with ./deploy.sh.'
+                env:
+                  anyOf:
+                  - type: object
+                  - $ref: '#/$defs/expression'
+                  description: Environment variables for the script, name to value.
+                secret_env:
+                  anyOf:
+                  - type: object
+                  - $ref: '#/$defs/expression'
+                  description: 'Environment variables filled on the runner from its secrets: variable
+                    name to secret NAME. The value never reaches StratoNext.'
+                working_directory:
+                  type: string
+                  description: Directory the script runs in; a fresh temporary one when empty.
+                timeout:
+                  type: string
+                  pattern: ^([0-9]{1,9})(ms|s|m|h)$
+                  description: How long the script may run, up to 1h. Defaults to 10m.
+                expect_exit_code:
+                  anyOf:
+                  - type: number
+                  - $ref: '#/$defs/expression'
+                  description: The exit code that counts as success. Defaults to 0.
+              required:
+              - script
+      - if:
+          properties:
+            uses:
+              const: stratonext.task.cancel@v1
+        then:
+          properties:
+            with:
+              type: object
+              additionalProperties: false
+              description: Cancels a task of this workspace; an agent working on it is told to stop. A
+                task that already finished is left as it is.
+              properties:
+                task:
+                  type: string
+                  description: ID of a task in this workspace, usually from an earlier node, e.g. ${{
+                    nodes.open_task.outputs.task_id }}.
+                reason:
+                  type: string
+                  description: Why, recorded in the task's worklog.
+              required:
+              - task
+      - if:
+          properties:
+            uses:
+              const: stratonext.task.create@v1
+        then:
+          properties:
+            with:
+              type: object
+              additionalProperties: false
+              description: Creates a task in a project or environment of this workspace, optionally dispatches
+                it to an agent, and can wait for it to finish.
+              properties:
+                name:
+                  type: string
+                  description: Task name.
+                description:
+                  type: string
+                  description: What the task is about; the assigned agent receives it.
+                instructions:
+                  type: string
+                  description: Additional instructions for the agent.
+                project:
+                  type: string
+                  description: Target project ID in this workspace. A task needs a project or at least
+                    one environment.
+                environments:
+                  anyOf:
+                  - type: array
+                  - $ref: '#/$defs/expression'
+                  description: Target environment IDs in this workspace.
+                assignee:
+                  type: string
+                  description: ID of the agent that should execute the task.
+                verification_criteria:
+                  type: string
+                  description: What the agent checks to confirm the task succeeded.
+                dispatch:
+                  anyOf:
+                  - type: boolean
+                  - $ref: '#/$defs/expression'
+                  description: Send the task to its assignee right away. Defaults to true when an assignee
+                    is set.
+                wait_for:
+                  anyOf:
+                  - enum:
+                    - created
+                    - completed
+                  - $ref: '#/$defs/expression'
+                  description: '''created'' finishes the node once the task exists; ''completed'' waits
+                    until the task finishes.'
+              required:
+              - name
+              - description
+      - if:
+          properties:
+            uses:
+              const: stratonext.task.get@v1
+        then:
+          properties:
+            with:
+              type: object
+              additionalProperties: false
+              description: 'Reads a task of this workspace: its status, whether it finished, its result
+                and summary. Changes nothing.'
+              properties:
+                task:
+                  type: string
+                  description: ID of a task in this workspace, usually from an earlier node, e.g. ${{
+                    nodes.open_task.outputs.task_id }}.
+              required:
+              - task
+$defs:
+  duration:
+    type: string
+    pattern: ^([0-9]{1,9})(ms|s|m|h)$
+    description: A duration, e.g. 30s, 5m, 2h.
+  expression:
+    type: string
+    pattern: \$\{\{.*\}\}
+    description: An expression, e.g. ${{ nodes.fetch.outputs.status }}.
