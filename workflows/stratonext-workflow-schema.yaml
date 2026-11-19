@@ -142,6 +142,55 @@ properties:
       items:
         type: string
     description: Labels every runner-backed node needs unless it sets its own.
+  container:
+    description: Run every step in a container of its own, started from this image and removed when the
+      run ends (needs a runner labelled 'containers').
+    oneOf:
+    - type: string
+    - type: object
+      additionalProperties: false
+      required:
+      - image
+      properties:
+        image:
+          type: string
+          description: 'The image every step runs in, e.g. python:3.12-slim. Any image works: the runner
+            brings its own step executor.'
+        pull:
+          enum:
+          - if-not-present
+          - always
+          description: When the runner pulls the image. Default if-not-present.
+        registry_auth:
+          type: object
+          description: Runner secrets (STRATONEXT_SECRET_<NAME>) that log in to a private registry; names,
+            never values.
+          additionalProperties: false
+          required:
+          - username
+          - password
+          properties:
+            username:
+              type: string
+              pattern: ^[A-Z][A-Z0-9_]{0,63}$
+            password:
+              type: string
+              pattern: ^[A-Z][A-Z0-9_]{0,63}$
+        resources:
+          type: object
+          additionalProperties: false
+          properties:
+            cpus:
+              type: number
+              exclusiveMinimum: 0
+              description: CPU limit, e.g. 2 or 0.5.
+            memory:
+              type: string
+              pattern: ^[0-9]+(\.[0-9]+)?[bkmgBKMG]?$
+              description: Memory limit, e.g. 512m or 4g.
+        cache:
+          type: boolean
+          description: Share the workflow's cache volume at /cache between runs. Default true.
   vars:
     type: object
     description: Values the expressions read as vars.<name>; a run may override them.
@@ -163,6 +212,7 @@ properties:
           type: string
         uses:
           enum:
+          - stratonext.approval.request@v1
           - stratonext.asset.get@v1
           - stratonext.decide@v1
           - stratonext.http.request@v1
@@ -213,6 +263,38 @@ properties:
         continue_on_error:
           type: boolean
       allOf:
+      - if:
+          properties:
+            uses:
+              const: stratonext.approval.request@v1
+        then:
+          properties:
+            with:
+              type: object
+              additionalProperties: false
+              description: Pauses the run until a person approves or rejects continuing. Rejected or unanswered
+                before the node's timeout, the node fails.
+              properties:
+                title:
+                  type: string
+                  description: What the approver is asked, e.g. "Deploy payments-api to production?" At
+                    most 255 characters.
+                message:
+                  type: string
+                  description: Context shown to the approver, e.g. outputs of earlier nodes. At most 4000
+                    characters.
+                risk:
+                  anyOf:
+                  - enum:
+                    - low
+                    - medium
+                    - high
+                    - critical
+                  - $ref: '#/$defs/expression'
+                  description: 'How risky continuing is, shown to the approver: low, medium (default),
+                    high or critical.'
+              required:
+              - title
       - if:
           properties:
             uses:
@@ -355,7 +437,13 @@ properties:
               properties:
                 script:
                   type: string
-                  description: The script text, run as a file with the chosen shell.
+                  description: 'The script text, run as a file with the chosen shell: one command or a
+                    whole script. Set this or ''asset'', not both.'
+                asset:
+                  type: string
+                  description: 'ID of one asset of ''project'' to run instead of ''script'': it is downloaded
+                    and run with the chosen shell, so there is no command to write. Set this or ''script'',
+                    not both.'
                 shell:
                   anyOf:
                   - enum:
@@ -367,7 +455,7 @@ properties:
                   description: The interpreter on the runner. Defaults to bash.
                 project:
                   type: string
-                  description: ID of the project whose assets the script uses; needed with 'assets'.
+                  description: ID of the project whose assets the step uses; needed with 'asset' and 'assets'.
                 assets:
                   anyOf:
                   - type: array
@@ -398,8 +486,16 @@ properties:
                   - type: number
                   - $ref: '#/$defs/expression'
                   description: The exit code that counts as success. Defaults to 0.
-              required:
-              - script
+                aws:
+                  anyOf:
+                  - type: object
+                  - $ref: '#/$defs/expression'
+                  description: 'Run the script as an AWS environment of this workspace: {environment:
+                    <ID>, permissions: [{actions: [...], resources: [...]}], reason}. Short-lived credentials
+                    are put in the script''s environment, so the aws cli works as is. Without ''permissions''
+                    the script gets the environment''s base operations role; with them it waits for an
+                    approval of exactly those statements. Literal values only: what a run gets is fixed
+                    when the workflow is published.'
       - if:
           properties:
             uses:
@@ -501,3 +597,4 @@ $defs:
     type: string
     pattern: \$\{\{.*\}\}
     description: An expression, e.g. ${{ nodes.fetch.outputs.status }}.
+
