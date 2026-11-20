@@ -143,8 +143,9 @@ properties:
         type: string
     description: Labels every runner-backed node needs unless it sets its own.
   container:
-    description: Run every step in a container of its own, started from this image and removed when the
-      run ends (needs a runner labelled 'containers').
+    description: 'The image every run executes in, a container of its own per run, removed when the run
+      ends. Optional: without it, runs execute in the runner''s own image (Ubuntu with bash, python3,
+      uv, aws, git and curl).'
     oneOf:
     - type: string
     - type: object
@@ -476,7 +477,8 @@ properties:
                     name to secret NAME. The value never reaches StratoNext.'
                 working_directory:
                   type: string
-                  description: Directory the script runs in; a fresh temporary one when empty.
+                  description: Directory in the run's container the script runs in, absolute or relative
+                    to /workspace; /workspace when empty.
                 timeout:
                   type: string
                   pattern: ^([0-9]{1,9})(ms|s|m|h)$
