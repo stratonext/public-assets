@@ -56,8 +56,10 @@ with a clear `description` is still the right default.
 ## Adding a template
 
 1. Copy `aws/aws-cost-and-credits-coverage.yaml` (in this folder) as your
-   starting point and fill it in. `stratonext-template-schema.yaml` is the
-   full JSON Schema it is validated against, if you need the exact rules.
+   starting point and fill it in. The full JSON Schema it is validated against
+   is served by the platform at
+   https://api.prod.stratonext.com/v1/templates/schema, if you need the exact
+   rules.
 2. Save it under `templates/<cloudProvider>/<id>.yaml`, where `<cloudProvider>`
    is a lowercase folder name (`aws`, `azure`, `gcp`, ...) and `<id>` matches
    the `id:` field inside the file.
